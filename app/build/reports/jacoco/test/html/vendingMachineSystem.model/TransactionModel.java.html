@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.model</a> &gt; <span class="el_source">TransactionModel.java</span></div><h1>TransactionModel.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.model;
+
+import vendingMachineSystem.VendingMachine;
+
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+public class TransactionModel {
+
+<span class="fc" id="L12">    Database db = Database.getInstance();</span>
+    String user;
+    String reason;
+    float moneyPaid;
+    float returnedChange;
+    String paymentMethod;
+    Map&lt;String, Integer&gt; purchasedItems;
+    
+<span class="fc" id="L20">    public TransactionModel(){</span>
+
+<span class="fc" id="L22">    }</span>
+    
+<span class="fc" id="L24">    public TransactionModel(String user, String reason) {</span>
+<span class="fc" id="L25">    	this.user = user;</span>
+<span class="fc" id="L26">    	this.reason = reason;</span>
+<span class="fc" id="L27">    }</span>
+
+<span class="fc" id="L29">    public TransactionModel(String user, float moneyPaid, float returnedChange, String paymentMethod, Map&lt;String, Integer&gt; purchasedItems) {</span>
+<span class="fc" id="L30">    	this.user = user;</span>
+<span class="fc" id="L31">    	this.moneyPaid = moneyPaid;</span>
+<span class="fc" id="L32">    	this.returnedChange = returnedChange;</span>
+<span class="fc" id="L33">    	this.paymentMethod = paymentMethod;</span>
+<span class="fc" id="L34">    	this.purchasedItems = purchasedItems;</span>
+<span class="fc" id="L35">    }</span>
+    
+    public void addFailedTransaction() {
+    	try {
+<span class="fc" id="L39">    		db.addFailedTransaction(user, reason);    		</span>
+<span class="nc" id="L40">    	} catch (SQLException e) {</span>
+<span class="nc" id="L41">    		System.err.println(e);</span>
+<span class="fc" id="L42">    	}</span>
+<span class="fc" id="L43">    }</span>
+    
+    public void addSuccessfulTransaction() {
+    	try {
+<span class="fc" id="L47">    		long transactionId = db.addSuccessfulTransaction(user, moneyPaid, returnedChange, paymentMethod);</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    		for (Map.Entry&lt;String, Integer&gt; entry: purchasedItems.entrySet()) {</span>
+<span class="nc" id="L49">    			db.addTransactionItems(transactionId, entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L50">    			db.removeProductQty(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L51">    		}</span>
+<span class="nc" id="L52">    	} catch (SQLException e) {</span>
+<span class="nc" id="L53">    		System.err.println(e);</span>
+<span class="fc" id="L54">    	}</span>
+<span class="fc" id="L55">    }</span>
+
+	public List&lt;RecentTransaction&gt; getRecentTransactions(String username){
+		try {
+<span class="fc" id="L59">			return db.getAllRecent(username);</span>
+<span class="nc" id="L60">		} catch (SQLException e) {</span>
+<span class="nc" id="L61">			System.err.println(e);</span>
+<span class="nc" id="L62">			return null;</span>
+		}
+	}
+
+	public List&lt;FailedTrans&gt; getFailedReport(){
+		try {
+<span class="fc" id="L68">			return db.getFailed();</span>
+<span class="nc" id="L69">		} catch (SQLException e) {</span>
+<span class="nc" id="L70">			System.err.println(e);</span>
+<span class="nc" id="L71">			return null;</span>
+		}
+	}
+
+	public List&lt;Summ&gt; getSummReport(){
+		try {
+<span class="fc" id="L77">			return db.getSumm();</span>
+<span class="nc" id="L78">		} catch (SQLException e) {</span>
+<span class="nc" id="L79">			System.err.println(e);</span>
+<span class="nc" id="L80">			return null;</span>
+		}
+	}
+
+	public List&lt;ISumm&gt; getISummReport(){
+		try {
+<span class="fc" id="L86">			return db.getISumm();</span>
+<span class="nc" id="L87">		} catch (SQLException e) {</span>
+<span class="nc" id="L88">			System.err.println(e);</span>
+<span class="nc" id="L89">			return null;</span>
+		}
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

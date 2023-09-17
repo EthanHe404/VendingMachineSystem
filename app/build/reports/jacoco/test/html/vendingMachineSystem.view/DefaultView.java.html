@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">DefaultView.java</span></div><h1>DefaultView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+
+import vendingMachineSystem.controller.DefaultState;
+
+public class DefaultView extends AbstractView {
+
+	DefaultState state;
+	
+<span class="fc" id="L15">	public DefaultView(DefaultState state) {</span>
+<span class="fc" id="L16">		this.state = state;</span>
+<span class="fc" id="L17">	}</span>
+
+	@Override
+	public void display() {
+		//TODO Example code
+<span class="fc" id="L22">		Window window = Window.getInstance();</span>
+		
+<span class="fc" id="L24">		Panel p = new Panel();</span>
+		//p.setLayout(new BorderLayout());
+<span class="fc" id="L26">		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));</span>
+
+		//menu
+<span class="fc" id="L29">		JLabel menuLabel = new JLabel(&quot;Menu&quot;);</span>
+<span class="fc" id="L30">		menuLabel.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="fc" id="L31">		Dimension size = menuLabel.getPreferredSize();</span>
+<span class="fc" id="L32">		menuLabel.setBounds(0,0,size.width,size.height);</span>
+<span class="fc" id="L33">		p.add(menuLabel);</span>
+<span class="fc" id="L34">		String[][] data = state.getItemData(false);</span>
+<span class="fc" id="L35">		String[] names = {&quot;Category&quot;, &quot;Item&quot;, &quot;Quantity&quot;, &quot;Price&quot;};</span>
+<span class="fc" id="L36">		JTable tab = new JTable(data, names);</span>
+<span class="fc" id="L37">		JScrollPane tab_scroller = new JScrollPane(tab);</span>
+<span class="fc" id="L38">		tab_scroller.setBounds(0,20,650,125);</span>
+<span class="fc" id="L39">		p.add(tab_scroller);</span>
+
+		//recent purchases
+		String[][] rec_data;
+<span class="fc" id="L43">		rec_data = state.getRecentData();</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">		if ( rec_data != null ) {</span>
+<span class="fc" id="L45">			JLabel recLabel = new JLabel(&quot;Recent Purchases&quot;);</span>
+<span class="fc" id="L46">			recLabel.setAlignmentX(Component.CENTER_ALIGNMENT);</span>
+<span class="fc" id="L47">			Dimension rec_size = recLabel.getPreferredSize();</span>
+<span class="fc" id="L48">			recLabel.setBounds(0, 150, rec_size.width, rec_size.height);</span>
+<span class="fc" id="L49">			p.add(recLabel);</span>
+<span class="fc" id="L50">			String[] rec_names = {&quot;&quot;, &quot;Item&quot;};</span>
+<span class="fc" id="L51">			JTable rec_tab = new JTable(rec_data, rec_names);</span>
+<span class="fc" id="L52">			JScrollPane rec_tab_scroller = new JScrollPane(rec_tab);</span>
+<span class="fc" id="L53">			rec_tab_scroller.setBounds(0, 170, 650, 75);</span>
+<span class="fc" id="L54">			p.add(rec_tab_scroller);</span>
+		}
+<span class="fc" id="L56">		JPanel buttonPanel = new JPanel();</span>
+		
+		//Purchase Button
+<span class="fc" id="L59">		JButton purchaseButton = new JButton(&quot;Purchase Items&quot;);</span>
+<span class="fc" id="L60">		purchaseButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L64">				DefaultView.this.state.changeToPurchaseItemsPage();</span>
+<span class="nc" id="L65">			}</span>
+			
+		});
+		
+//		purchaseButton.setBounds( 150, 250, 350, 25 );
+<span class="fc" id="L70">		buttonPanel.add(purchaseButton);</span>
+		
+		//Login Button
+<span class="fc" id="L73">		JButton loginButton = new JButton(&quot;Log In/Register&quot;);</span>
+<span class="fc" id="L74">		loginButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L78">				DefaultView.this.state.changeToLoginPage();</span>
+<span class="nc" id="L79">			}</span>
+			
+		});
+
+//		loginButton.setBounds( 150, 250, 350, 25 );
+<span class="fc" id="L84">		buttonPanel.add(loginButton);</span>
+		
+<span class="fc" id="L86">		p.add(buttonPanel);</span>
+		
+<span class="fc" id="L88">		window.updateWindow(p);</span>
+<span class="fc" id="L89">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

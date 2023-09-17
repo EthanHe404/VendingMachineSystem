@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.CashPaymentStateTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:04" hostname="ethanAir.modem" time="0.241">
+  <properties/>
+  <testcase name="No Timeout" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.009"/>
+  <testcase name="Timeout" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.029"/>
+  <testcase name="testUpdateCash()" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.03"/>
+  <testcase name="calculateTotal" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.029"/>
+  <testcase name="testGetChangeData()" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.013"/>
+  <testcase name="Finish Transaction" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.073"/>
+  <testcase name="Return To purchase Page" classname="vendingMachineSystem.controller.CashPaymentStateTest" time="0.042"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Database.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.model</a> &gt; <span class="el_source">Database.java</span></div><h1>Database.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.model;
+
+
+//import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.FileReader;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Database {
+
+	String dbUrl;
+	Connection connection;
+	static Database database;
+	
+	public static Database getInstance() {
+<span class="fc bfc" id="L22" title="All 2 branches covered.">		if (database == null)</span>
+<span class="fc" id="L23">			database = new Database();</span>
+<span class="fc" id="L24">		return database;</span>
+	}
+	
+	private Database() {
+
+	}
+	
+	public void connect(String name) {
+<span class="fc" id="L32">		dbUrl = &quot;jdbc:sqlite:&quot; + System.getProperty(&quot;user.dir&quot;) + &quot;/&quot; + name;</span>
+        try {
+<span class="fc" id="L34">        	connection = DriverManager.getConnection(dbUrl);</span>
+<span class="fc" id="L35">			setupProductTable();</span>
+			//dropTable(&quot;Users&quot;);
+<span class="fc" id="L37">			setupUserTable();</span>
+			//addDefaultUsers();
+<span class="fc" id="L39">			setUpChangeTable();</span>
+			//dropTable(&quot;Transactions&quot;);
+<span class="fc" id="L41">			setupTransactionTable();</span>
+			//dropTable(&quot;TransactionProducts&quot;);
+<span class="fc" id="L43">			setupTransactionProductsTable();</span>
+			//dropTable(&quot;CreditCardList&quot;);
+<span class="fc" id="L45">			setupCreditCardList();</span>
+			//importJsonFile();
+<span class="fc" id="L47">			setupCreditCardStored();</span>
+<span class="nc" id="L48">        } catch (SQLException e) {</span>
+<span class="nc" id="L49">        	e.printStackTrace();</span>
+<span class="nc" id="L50">        } catch (Exception e) {</span>
+<span class="nc" id="L51">			e.printStackTrace();</span>
+<span class="pc" id="L52">		}</span>
+<span class="fc" id="L53">	}</span>
+	
+	private void setupProductTable() throws SQLException {
+
+<span class="fc" id="L57">		Statement statement = connection.createStatement();</span>
+		
+<span class="fc" id="L59">		String productTableSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS Products (
+			id integer PRIMARY KEY,
+			name VARCHAR(50) NOT NULL,
+			category VARCHAR(50) NOT NULL,
+			quantity INTEGER NOT NULL,
+			price FLOAT(5,2) CHECK (price &gt; 0) NOT NULL
+ 	  		)
+ 	  		;&quot;&quot;&quot;;
+		
+<span class="fc" id="L69">		statement.execute(productTableSql);</span>
+<span class="fc" id="L70">		statement.close();</span>
+<span class="fc" id="L71">	}</span>
+
+	private void setUpChangeTable() throws  SQLException {
+<span class="fc" id="L74">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L76">		String changeTableSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS Changes (
+			name VARCHAR(10) PRIMARY KEY,
+			value FLOAT(5,2) NOT NULL, 
+			quantity INTEGER NOT NULL
+ 	  		)
+ 	  		;&quot;&quot;&quot;;
+
+<span class="fc" id="L84">		statement.execute(changeTableSql);</span>
+<span class="fc" id="L85">		statement.close();</span>
+<span class="fc" id="L86">	}</span>
+
+	private void setupUserTable() throws SQLException {
+<span class="fc" id="L89">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L91">		String UserTableSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS Users (
+			Username VARCHAR(18) PRIMARY KEY,
+			Password VARCHAR(18) NOT NULL,
+			Type VARCHAR(20) NOT NULL	
+    		);&quot;&quot;&quot;;
+
+<span class="fc" id="L98">		statement.execute(UserTableSql);</span>
+<span class="fc" id="L99">		statement.close();</span>
+<span class="fc" id="L100">	}</span>
+	
+	private void setupTransactionTable() throws SQLException {
+<span class="fc" id="L103">		Statement statement = connection.createStatement();</span>
+
+		//I got a bit lazy with the user field, I used a string instead of FK so we don't have
+		//to query the user table to get the user id.
+<span class="fc" id="L107">		String TransactionTableSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS Transactions (
+			id INTEGER PRIMARY KEY,
+			User VARCHAR(18),
+			Successful INT,
+			Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+			Money_paid FLOAT(5,2) DEFAULT 0,
+			Returned_change FLOAT(5,2) DEFAULT 0,
+			Payment_method VARCHAR(10) DEFAULT NULL,
+			Cancelled_reason VARCHAR(20) 
+    		);&quot;&quot;&quot;;
+
+<span class="fc" id="L119">		statement.execute(TransactionTableSql);</span>
+<span class="fc" id="L120">		statement.close();</span>
+<span class="fc" id="L121">	}</span>
+	
+	private void setupTransactionProductsTable() throws SQLException {
+<span class="fc" id="L124">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L126">		String TransactionProductsTableSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS TransactionProducts (
+			TransactionId INTEGER,
+			Product INTEGER,
+			Quantity INT NOT NULL,
+			FOREIGN KEY (TransactionId) REFERENCES Transactions(id),
+			FOREIGN KEY (Product) REFERENCES Products(id)
+    		);&quot;&quot;&quot;;
+
+<span class="fc" id="L135">		statement.execute(TransactionProductsTableSql);</span>
+<span class="fc" id="L136">		statement.close();</span>
+<span class="fc" id="L137">	}</span>
+
+//	public void addDefaultUsers() throws SQLException {
+//		Statement statement = connection.createStatement();
+//
+//		String changeTableSql = &quot;&quot;&quot;
+//			INSERT INTO Users(Username, Password, Type)
+//				VALUES
+//					('billyowner', 'owner123', 'OWNER'),
+//					('billyseller', 'seller123', 'SELLER'),
+//					('billycashier', 'cashier123', 'CASHIER'),
+//					('billy', '123456', 'CUSTOMER')
+//			;
+//			&quot;&quot;&quot;;
+//
+//		statement.execute(changeTableSql);
+//		statement.close();
+//	}
+
+//	public void addDataChanges() throws SQLException {
+//		Statement statement = connection.createStatement();
+//
+//		String changeTableSql = &quot;&quot;&quot;
+//			INSERT INTO Changes(name, value, quantity)
+//				VALUES
+//					('$100', '100.00', 5),
+//					('$50', '50.00', 5),
+//					('$20', '20.00', 5),
+//					('$10', '10.00', 5),
+//					('$5', '5.00', 5),
+//					('$2', '2.00', 5),
+//					('$1', '1.00', 5),
+//					('50c', '0.50', 5),
+//					('20c', '0.20', 5),
+//					('10c', '0.10', 5),
+//					('5c', '0.05', 5)
+//			;
+//			&quot;&quot;&quot;;
+//
+//		statement.execute(changeTableSql);
+//		statement.close();
+//	}
+
+//	public void addDataProducts() throws SQLException {
+//		Statement statement = connection.createStatement();
+//
+//		String productTableSql = &quot;&quot;&quot;
+//			INSERT INTO Products(id, name, category, quantity, price)
+//				VALUES
+//					(101, 'Sprite', 'Drinks', 7, 4.70),
+//					(102, 'Coca-Cola', 'Drinks', 7, 4.70),
+//					(103, 'Mount Franklin', 'Drinks', 7, 3.60),
+//					(104, 'Pump', 'Drinks', 7, 3.40),
+//					(105, 'Pepsi', 'Drinks', 7, 4.50),
+//					(106, 'Original Orange Juice', 'Drinks', 7, 5.00),
+//					(107, 'Golden Circle Apple Juice', 'Drinks', 7, 4.90),
+//					(201, 'Cadbury', 'Chocolates', 7, 6.50),
+//					(202, 'Mars Pods', 'Chocolates', 7, 5.60),
+//					(203, 'Kinder', 'Chocolates', 7, 6.60),
+//					(204, 'M&amp;M', 'Chocolates', 7, 5.00),
+//					(205, 'Oreo', 'Chocolates', 7, 6.60),
+//					(206, 'KitKat', 'Chocolates', 7, 6.70),
+//					(207, 'Bounty', 'Chocolates', 7, 5.40),
+//					(301, 'Pringles Sour Cream', 'Chips', 7, 4.5),
+//					(302, 'Kettle', 'Chips', 7, 3.5),
+//					(303, 'Thins', 'Chips', 7, 3),
+//					(304, 'Smith Sea Salt', 'Chips', 7, 4),
+//					(305, 'Smith Chicken', 'Chips', 7, 4),
+//					(306, 'Smith BBQ', 'Chips', 7, 4),
+//					(307, 'Pringles BBQ', 'Chips', 7, 4.5),
+//					(401, 'Mentos', 'Candies', 7, 5.3),
+//					(402, 'Sour Patch', 'Candies', 7, 4.3),
+//					(403, 'Skittles', 'Candies', 7, 4.7),
+//					(404, 'Tic Tac', 'Candies', 7, 6.3),
+//					(405, 'Allen', 'Candies', 7, 4.8),
+//					(406, 'Twists', 'Candies', 7, 4.3),
+//					(407, 'Haribo Gold Bear', 'Candies', 7, 6.3)
+//			;
+//			&quot;&quot;&quot;;
+//
+//		statement.execute(productTableSql);
+//		statement.close();
+//	}
+	
+	//Dummy method to show how to retrieve values	
+//	public String retrieveDataProducts() throws SQLException {
+//		Statement statement = connection.createStatement();
+//
+//		String productTableSql = &quot;&quot;&quot;
+//			SELECT * FROM Products;
+//			&quot;&quot;&quot;;
+//
+//		ResultSet rs = statement.executeQuery(productTableSql);
+//		String name = rs.getString(&quot;name&quot;);
+//		statement.close();
+//		return name;
+//	}
+
+	public void addUser(String username, String password, String type) throws SQLException {
+<span class="fc" id="L236">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L238">		String userTableSql = String.format(&quot;&quot;&quot;</span>
+				INSERT INTO Users(Username, Password, Type) 
+				VALUES ('%1$s', '%2$s','%3$s');
+				&quot;&quot;&quot;, username, password, type);
+
+<span class="fc" id="L243">		statement.execute(userTableSql);</span>
+<span class="fc" id="L244">		statement.close();</span>
+
+<span class="fc" id="L246">	}</span>
+
+	public String getPassword(String username) throws SQLException {
+<span class="fc" id="L249">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L251">		String UserTableSql = String.format(&quot;&quot;&quot;</span>
+				SELECT Password
+				FROM Users
+				WHERE EXISTS
+				(SELECT username FROM Users WHERE username = '%1$s')
+				AND
+				username = '%2$s';
+				&quot;&quot;&quot;, username, username);
+
+<span class="fc" id="L260">		ResultSet rs = statement.executeQuery(UserTableSql);</span>
+<span class="fc" id="L261">		String password = rs.getString(&quot;Password&quot;);</span>
+<span class="fc" id="L262">		statement.close();</span>
+<span class="fc" id="L263">		return password;</span>
+
+	}
+
+	public String getUserType(String username) throws SQLException {
+<span class="fc" id="L268">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L270">		String UserTableSql = String.format(&quot;&quot;&quot;</span>
+				SELECT Type
+				FROM Users
+				WHERE username = '%s';
+				&quot;&quot;&quot;, username);
+
+<span class="fc" id="L276">		ResultSet rs = statement.executeQuery(UserTableSql);</span>
+<span class="fc" id="L277">		String type = rs.getString(&quot;Type&quot;);</span>
+<span class="fc" id="L278">		statement.close();</span>
+<span class="fc" id="L279">		return type;</span>
+
+	}
+
+	public List&lt;Product&gt; getAllProducts() throws SQLException{
+
+<span class="fc" id="L285">		List&lt;Product&gt; ret = new ArrayList&lt;Product&gt;();</span>
+		Product prod;
+
+<span class="fc" id="L288">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L289">		String productTableSql = &quot;&quot;&quot;</span>
+			SELECT * FROM Products;
+			&quot;&quot;&quot;;
+
+<span class="fc" id="L293">		ResultSet rs = statement.executeQuery(productTableSql);</span>
+
+<span class="fc bfc" id="L295" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L296">			prod = new Product();</span>
+<span class="fc" id="L297">			prod.setId( rs.getInt(&quot;id&quot;) );</span>
+<span class="fc" id="L298">			prod.setName( rs.getString(&quot;name&quot;));</span>
+<span class="fc" id="L299">			prod.setCategory( rs.getString(&quot;category&quot;));</span>
+<span class="fc" id="L300">			prod.setQuantity( rs.getInt(&quot;quantity&quot;));</span>
+<span class="fc" id="L301">			prod.setPrice( rs.getFloat(&quot;price&quot;));</span>
+<span class="fc" id="L302">			ret.add(prod);</span>
+		}
+
+<span class="fc" id="L305">		statement.close();</span>
+<span class="fc" id="L306">		return ret;</span>
+	}
+
+	public void updateItemByID(String id, String name, String category, String price, String qty) throws SQLException{
+<span class="fc" id="L310">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L311">		String productTableSql = String.format(</span>
+				&quot;UPDATE Products SET name='%s', category='%s', price=%s, quantity=%s WHERE id=%s;&quot;
+				, name, category, price, qty, id
+		);
+
+<span class="fc" id="L316">		statement.execute(productTableSql);</span>
+<span class="fc" id="L317">		statement.close();</span>
+<span class="fc" id="L318">	}</span>
+
+	public void updateItemID(String name, String newID) throws  SQLException{
+<span class="fc" id="L321">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L322">		String productTableSql = String.format(</span>
+				&quot;UPDATE Products SET id=%s WHERE name='%s';&quot;
+				, newID, name
+		);
+
+<span class="fc" id="L327">		statement.execute(productTableSql);</span>
+<span class="fc" id="L328">		statement.close();</span>
+<span class="fc" id="L329">	}</span>
+
+	public ArrayList&lt;Change&gt; getAllChanges() throws SQLException{
+
+<span class="fc" id="L333">		ArrayList&lt;Change&gt; changes = new ArrayList&lt;Change&gt;();</span>
+		Change change;
+
+<span class="fc" id="L336">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L337">		String productTableSql = &quot;&quot;&quot;</span>
+			SELECT * FROM Changes;
+			&quot;&quot;&quot;;
+
+<span class="fc" id="L341">		ResultSet rs = statement.executeQuery(productTableSql);</span>
+
+<span class="fc bfc" id="L343" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L344">			change = new Change();</span>
+<span class="fc" id="L345">			change.setName( rs.getString(&quot;name&quot;) );</span>
+<span class="fc" id="L346">			change.setValue( rs.getFloat(&quot;value&quot;));</span>
+<span class="fc" id="L347">			change.setQty( rs.getInt(&quot;quantity&quot;));</span>
+<span class="fc" id="L348">			changes.add(change);</span>
+		}
+
+<span class="fc" id="L351">		statement.close();</span>
+<span class="fc" id="L352">		return changes;</span>
+	}
+
+	public void updateChangeQty(String name, String newQty) throws SQLException {
+<span class="fc" id="L356">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L357">		String changeTableSql = String.format(</span>
+				&quot;UPDATE Changes SET Quantity=%s WHERE Name='%s';&quot;, newQty, name
+				);
+		
+<span class="fc" id="L361">		statement.execute(changeTableSql);</span>
+<span class="fc" id="L362">		statement.close();</span>
+
+<span class="fc" id="L364">	}</span>
+	
+	public void addFailedTransaction(String user, String reason) throws SQLException {
+<span class="fc" id="L367">		String sql = &quot;&quot;&quot;</span>
+		INSERT INTO Transactions (User, Successful, Cancelled_reason)
+		VALUES (?, FALSE, ?)&quot;&quot;&quot;;
+		
+<span class="fc" id="L371">		PreparedStatement statement = connection.prepareStatement(sql);</span>
+<span class="fc" id="L372">		statement.setString(1, user);</span>
+<span class="fc" id="L373">		statement.setString(2, reason);</span>
+<span class="fc" id="L374">		statement.execute();</span>
+<span class="fc" id="L375">		statement.close();</span>
+<span class="fc" id="L376">	}</span>
+	
+	public long addSuccessfulTransaction(String user, float moneyPaid, float returnedChange, String paymentMethod) throws SQLException {
+<span class="fc" id="L379">		String sql = &quot;&quot;&quot;</span>
+		INSERT INTO Transactions (User, Successful, Money_paid, Returned_change, Payment_method)
+		VALUES (?, TRUE, ?, ?, ?)&quot;&quot;&quot;;
+		
+<span class="fc" id="L383">		PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);</span>
+<span class="fc" id="L384">		statement.setString(1, user);</span>
+<span class="fc" id="L385">		statement.setFloat(2, moneyPaid);</span>
+<span class="fc" id="L386">		statement.setFloat(3, returnedChange);</span>
+<span class="fc" id="L387">		statement.setString(4, paymentMethod);</span>
+<span class="fc" id="L388">		statement.execute();</span>
+<span class="fc" id="L389">		long id = statement.getGeneratedKeys().getLong(1);</span>
+<span class="fc" id="L390">		statement.close();</span>
+<span class="fc" id="L391">		return id;</span>
+	}
+	
+	public void addTransactionItems(long id, String itemName, int quantity) throws SQLException {
+<span class="nc" id="L395">		String selectSql = &quot;&quot;&quot;</span>
+		SELECT id from Products WHERE name = ?&quot;&quot;&quot;;
+		
+<span class="nc" id="L398">		PreparedStatement selectStatement = connection.prepareStatement(selectSql);</span>
+<span class="nc" id="L399">		selectStatement.setString(1, itemName);</span>
+<span class="nc" id="L400">		ResultSet rs = selectStatement.executeQuery();</span>
+<span class="nc" id="L401">		long productId = rs.getLong(&quot;id&quot;);</span>
+<span class="nc" id="L402">		selectStatement.close();</span>
+		
+<span class="nc" id="L404">		String insertSql = &quot;&quot;&quot;</span>
+		INSERT INTO TransactionProducts (TransactionId, Product, Quantity)
+		VALUES (?, ?, ?)&quot;&quot;&quot;;
+		
+<span class="nc" id="L408">		PreparedStatement statement = connection.prepareStatement(insertSql);</span>
+<span class="nc" id="L409">		statement.setLong(1, id);</span>
+<span class="nc" id="L410">		statement.setLong(2, productId);</span>
+<span class="nc" id="L411">		statement.setInt(3, quantity);</span>
+<span class="nc" id="L412">		statement.execute();</span>
+<span class="nc" id="L413">		statement.close();</span>
+<span class="nc" id="L414">	}</span>
+	
+	public void removeProductQty(String itemName, int quantity) throws SQLException {
+<span class="nc" id="L417">		String sql = &quot;&quot;&quot;</span>
+		UPDATE Products
+		SET Quantity = Quantity - ?
+		WHERE name=?&quot;&quot;&quot;;
+		
+<span class="nc" id="L422">		PreparedStatement statement = connection.prepareStatement(sql);</span>
+<span class="nc" id="L423">		statement.setInt(1, quantity);</span>
+<span class="nc" id="L424">		statement.setString(2, itemName);</span>
+<span class="nc" id="L425">		statement.execute();</span>
+<span class="nc" id="L426">		statement.close();</span>
+<span class="nc" id="L427">	}</span>
+
+
+	void doStatement(String cmd) throws SQLException{
+<span class="fc" id="L431">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L432">		statement.execute(cmd);</span>
+<span class="fc" id="L433">		statement.close();</span>
+<span class="fc" id="L434">	}</span>
+
+	public List&lt;User&gt; getUserReport() throws SQLException{
+<span class="fc" id="L437">		List&lt;User&gt; users = new ArrayList&lt;User&gt;();</span>
+		User user;
+
+<span class="fc" id="L440">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L441">		String productTableSql = &quot;&quot;&quot;</span>
+			SELECT Username, Type FROM Users;
+			&quot;&quot;&quot;;
+
+<span class="fc" id="L445">		ResultSet rs = statement.executeQuery(productTableSql);</span>
+<span class="fc bfc" id="L446" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L447">			user = new User(rs.getString(&quot;username&quot;), rs.getString(&quot;type&quot;));</span>
+<span class="fc" id="L448">			users.add(user);</span>
+		}
+<span class="fc" id="L450">		statement.close();</span>
+<span class="fc" id="L451">		return users;</span>
+	}
+
+	private void setupCreditCardList() throws SQLException {
+<span class="fc" id="L455">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L457">		String CreditCardListSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS CreditCardList (
+			cardID INT PRIMARY KEY,
+			name VARCHAR(18),
+			number VARCHAR(18)
+    		);&quot;&quot;&quot;;
+
+<span class="fc" id="L464">		statement.execute(CreditCardListSql);</span>
+<span class="fc" id="L465">		statement.close();</span>
+<span class="fc" id="L466">	}</span>
+
+	public void dropTable(String tableToDrop) throws SQLException {
+<span class="fc" id="L469">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L471">		String dropTableSql = String.format(&quot;&quot;&quot;</span>
+		DROP TABLE %s;&quot;&quot;&quot;, tableToDrop);
+
+<span class="fc" id="L474">		statement.execute(dropTableSql);</span>
+<span class="fc" id="L475">		statement.close();</span>
+<span class="fc" id="L476">	}</span>
+
+//	private void importJsonFile() throws Exception {
+//		String sql = &quot;&quot;&quot;
+//		INSERT INTO CreditCardList (cardID,name, number) VALUES (?, ?, ?);&quot;&quot;&quot;;
+//		PreparedStatement statement = connection.prepareStatement(sql);
+//
+//		JSONParser parser = new JSONParser();
+//		JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(&quot;credit_cards.json&quot;));
+//		int id = 1;
+//		for(Object object : jsonArray) {
+//			JSONObject cardDetail = (JSONObject) object;
+//			String name = (String) cardDetail.get(&quot;name&quot;);
+//			String number = (String) cardDetail.get(&quot;number&quot;);
+//			statement.setInt(1,id);
+//			statement.setString(2, name);
+//			statement.setString(3, number);
+//			statement.executeUpdate();
+//			id +=1;
+//		}
+//
+//		statement.close();
+//	}
+
+	public String getCardNumber(String name, String cardNumber) throws SQLException {
+<span class="fc" id="L501">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L503">		String UserTableSql = String.format(&quot;&quot;&quot;</span>
+				SELECT number
+				FROM CreditCardList
+				WHERE EXISTS
+				(SELECT number FROM CreditCardList WHERE (name = '%1$s' AND number = '%2$s'))
+				AND
+				(name = '%3$s' AND number = '%2$s');
+				&quot;&quot;&quot;, name, cardNumber,name,cardNumber);
+
+<span class="fc" id="L512">		ResultSet rs = statement.executeQuery(UserTableSql);</span>
+<span class="fc" id="L513">		String number = rs.getString(&quot;number&quot;);</span>
+<span class="fc" id="L514">		statement.close();</span>
+<span class="fc" id="L515">		return number;</span>
+	}
+
+	private void setupCreditCardStored() throws SQLException {
+<span class="fc" id="L519">		Statement statement = connection.createStatement();</span>
+
+<span class="fc" id="L521">		String CreditCardStoredSql = &quot;&quot;&quot;</span>
+			CREATE TABLE IF NOT EXISTS CreditCardStored (
+			username VARCHAR(18) NOT NULL,
+			cardName VARCHAR(18) NOT NULL,
+			cardNumber VARCHAR(18) NOT NULL,
+			PRIMARY KEY (username, cardName, cardNumber)
+    		);&quot;&quot;&quot;;
+
+<span class="fc" id="L529">		statement.execute(CreditCardStoredSql);</span>
+<span class="fc" id="L530">		statement.close();</span>
+<span class="fc" id="L531">	}</span>
+
+	public void storeCardDetails(String username, String cardName, String cardNum) throws SQLException {
+<span class="nc" id="L534">		String sql = &quot;&quot;&quot;</span>
+		INSERT INTO CreditCardStored (username, cardName, cardNumber)
+		VALUES (?, ?, ?)&quot;&quot;&quot;;
+
+<span class="nc" id="L538">		PreparedStatement statement = connection.prepareStatement(sql);</span>
+<span class="nc" id="L539">		statement.setString(1, username);</span>
+<span class="nc" id="L540">		statement.setString(2, cardName);</span>
+<span class="nc" id="L541">		statement.setString(3, cardNum);</span>
+<span class="nc" id="L542">		statement.execute();</span>
+<span class="nc" id="L543">		statement.close();</span>
+<span class="nc" id="L544">	}</span>
+
+	public List&lt;String&gt; getCardStoredByUser(String username) throws SQLException{
+
+<span class="fc" id="L548">		List &lt;String&gt; ret = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L550">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L551">		String cardTableSql = String.format(&quot;&quot;&quot;</span>
+			SELECT * FROM CreditCardStored
+			WHERE username = '%s';
+			&quot;&quot;&quot;, username);
+
+<span class="fc" id="L556">		ResultSet rs = statement.executeQuery(cardTableSql);</span>
+
+<span class="fc bfc" id="L558" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L559">			String cardNumber = rs.getString(&quot;cardNumber&quot;);</span>
+<span class="fc" id="L560">			String last3Number = cardNumber.substring(cardNumber.length() - 2);</span>
+<span class="fc" id="L561">			ret.add(rs.getString(&quot;cardName&quot;) + &quot;  |  ***&quot; + last3Number);</span>
+<span class="fc" id="L562">		}</span>
+
+<span class="fc" id="L564">		statement.close();</span>
+<span class="fc" id="L565">		return ret;</span>
+	}
+
+	public String[][] getAllUsers(String except,boolean showPassword) throws SQLException{
+
+<span class="fc" id="L570">		List &lt;String&gt; combination = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L571">		List &lt;String[]&gt; ret = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L573">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L574">		String Sql = String.format(&quot;&quot;&quot;</span>
+			SELECT * FROM Users
+			WHERE Username != '%s';
+			&quot;&quot;&quot;, except);
+<span class="fc" id="L578">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L580" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L581">			combination.add(rs.getString(&quot;Username&quot;));</span>
+<span class="fc bfc" id="L582" title="All 2 branches covered.">			if (showPassword){</span>
+<span class="fc" id="L583">				combination.add(rs.getString(&quot;Password&quot;));</span>
+			}else{
+<span class="fc" id="L585">				combination.add(&quot;*********&quot;);</span>
+			}
+<span class="fc" id="L587">			combination.add(rs.getString(&quot;Type&quot;));</span>
+<span class="fc" id="L588">			String[] comboArray = new String[3];</span>
+<span class="fc" id="L589">			comboArray = combination.toArray(comboArray);</span>
+<span class="fc" id="L590">			ret.add(comboArray);</span>
+<span class="fc" id="L591">			combination = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L592">		}</span>
+<span class="fc" id="L593">		statement.close();</span>
+
+<span class="fc" id="L595">		String[][] retArray = new String[ret.size()][];</span>
+<span class="fc" id="L596">		retArray = ret.toArray(retArray);</span>
+<span class="fc" id="L597">		return retArray;</span>
+	}
+
+	public String[] getAllUsernames(String except) throws SQLException {
+
+<span class="fc" id="L602">		List &lt;String&gt; ret = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L604">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L605">		String Sql = String.format(&quot;&quot;&quot;</span>
+			SELECT Username FROM Users
+			WHERE Username != '%s';
+			&quot;&quot;&quot;,except);
+<span class="fc" id="L609">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L611" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L612">			ret.add(rs.getString(&quot;Username&quot;));</span>
+		}
+<span class="fc" id="L614">		statement.close();</span>
+
+<span class="fc" id="L616">		String[] retArray = new String[ret.size()];</span>
+<span class="fc" id="L617">		retArray = ret.toArray(retArray);</span>
+<span class="fc" id="L618">		return retArray;</span>
+	}
+
+	public void removeUser(String username) throws SQLException{
+
+<span class="fc" id="L623">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L624">		String Sql = String.format(&quot;&quot;&quot;</span>
+   			DELETE FROM Users 
+   			WHERE Username='%s';
+			&quot;&quot;&quot;, username);
+<span class="fc" id="L628">		statement.execute(Sql);</span>
+<span class="fc" id="L629">		statement.close();</span>
+<span class="fc" id="L630">	}</span>
+
+	public String[] getUserInfo(String username) throws SQLException{
+<span class="fc" id="L633">		List &lt;String&gt; ret = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L635">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L636">		String Sql = String.format(&quot;&quot;&quot;</span>
+			SELECT * FROM Users
+			WHERE Username = '%s';
+			&quot;&quot;&quot;,username);
+<span class="fc" id="L640">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L642" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L643">			ret.add(rs.getString(&quot;Username&quot;));</span>
+<span class="fc" id="L644">			ret.add(rs.getString(&quot;Password&quot;));</span>
+<span class="fc" id="L645">			ret.add(rs.getString(&quot;Type&quot;));</span>
+		}
+<span class="fc" id="L647">		statement.close();</span>
+
+<span class="fc" id="L649">		String[] retArray = new String[ret.size()];</span>
+<span class="fc" id="L650">		retArray = ret.toArray(retArray);</span>
+<span class="fc" id="L651">		return retArray;</span>
+	}
+
+	public List&lt;RecentTransaction&gt; getAllRecent(String username) throws SQLException{
+<span class="fc" id="L655">		List &lt;RecentTransaction&gt; ret = new ArrayList&lt;RecentTransaction&gt;();</span>
+
+<span class="fc" id="L657">		Statement statement = connection.createStatement();</span>
+		String Sql;
+
+<span class="fc bfc" id="L660" title="All 2 branches covered.">		if ( username == null ) {</span>
+<span class="fc" id="L661">			Sql = String.format(&quot;&quot;&quot;</span>
+					SELECT P.name 
+					FROM 
+						Transactions T
+						INNER JOIN TransactionProducts TP ON (TP.TransactionId = T.id)
+						INNER JOIN Products P ON ( TP.Product = P.id)
+					WHERE successful = 1
+					ORDER BY T.id DESC
+					LIMIT 5
+					;
+					&quot;&quot;&quot;);
+		} else {
+<span class="fc" id="L673">			Sql = String.format(&quot;&quot;&quot;</span>
+					SELECT P.name 
+					FROM 
+						Transactions T
+						INNER JOIN TransactionProducts TP ON (TP.TransactionId = T.id)
+						INNER JOIN Products P ON ( TP.Product = P.id)
+					WHERE successful = 1 AND User = '%s'
+					ORDER BY T.id DESC
+					LIMIT 5;
+					&quot;&quot;&quot;, username);
+		}
+<span class="fc" id="L684">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L686" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L687">			ret.add(new RecentTransaction(rs.getString(&quot;Name&quot;)));</span>
+		}
+<span class="fc" id="L689">		statement.close();</span>
+<span class="fc" id="L690">		return ret;</span>
+	}
+
+	public List &lt;FailedTrans&gt; getFailed() throws SQLException{
+<span class="fc" id="L694">		List &lt;FailedTrans&gt; ret = new ArrayList&lt;FailedTrans&gt;();</span>
+
+<span class="fc" id="L696">		Statement statement = connection.createStatement();</span>
+		String Sql;
+
+<span class="fc" id="L699">		Sql = String.format(&quot;&quot;&quot;</span>
+				SELECT Date, COALESCE(User,'anonymous') AS Name, Cancelled_reason
+				FROM Transactions T
+				WHERE successful = 0
+				;
+				&quot;&quot;&quot;);
+<span class="fc" id="L705">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L707" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L708">			ret.add(new FailedTrans(rs.getTimestamp(&quot;Date&quot;), rs.getString(&quot;Name&quot;), rs.getString(&quot;Cancelled_reason&quot;)));</span>
+		}
+<span class="fc" id="L710">		statement.close();</span>
+<span class="fc" id="L711">		return ret;</span>
+	}
+
+	public List&lt;Summ&gt; getSumm() throws SQLException{
+<span class="fc" id="L715">		List &lt;Summ&gt; ret = new ArrayList&lt;Summ&gt;();</span>
+
+<span class="fc" id="L717">		Statement statement = connection.createStatement();</span>
+		String Sql;
+
+		//when,item,paid,change,method
+<span class="fc" id="L721">		Sql = String.format(&quot;&quot;&quot;</span>
+				SELECT T.Date, P.name, T.Money_paid, T.Returned_change, T.Payment_method
+				FROM 
+					Transactions T
+					INNER JOIN TransactionProducts TP ON (TP.TransactionId = T.id)
+					INNER JOIN Products P ON ( TP.Product = P.id)
+				WHERE successful = 1 -- this line isn't really needed as inner join handles it
+				;
+				&quot;&quot;&quot;);
+<span class="fc" id="L730">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L732" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L733">			ret.add(new Summ(</span>
+<span class="fc" id="L734">									rs.getTimestamp(&quot;Date&quot;),</span>
+<span class="fc" id="L735">									rs.getString(&quot;Name&quot;),</span>
+<span class="fc" id="L736">									rs.getDouble(&quot;Money_paid&quot;),</span>
+<span class="fc" id="L737">									rs.getDouble(&quot;Returned_change&quot;),</span>
+<span class="fc" id="L738">									rs.getString(&quot;Payment_method&quot;)</span>
+									));
+		}
+<span class="fc" id="L741">		statement.close();</span>
+<span class="fc" id="L742">		return ret;</span>
+	}
+
+	public List&lt;ISumm&gt; getISumm() throws SQLException{
+<span class="fc" id="L746">		List &lt;ISumm&gt; ret = new ArrayList&lt;ISumm&gt;();</span>
+
+<span class="fc" id="L748">		Statement statement = connection.createStatement();</span>
+		String Sql;
+
+<span class="fc" id="L751">		Sql = String.format(&quot;&quot;&quot;</span>
+				SELECT TP.Product, P.name, SUM(TP.Quantity) AS Quantity
+				FROM 
+					TransactionProducts TP
+					INNER JOIN Products P ON ( TP.Product = P.id)
+				GROUP BY TP.Product
+				;
+				&quot;&quot;&quot;);
+<span class="fc" id="L759">		ResultSet rs = statement.executeQuery(Sql);</span>
+
+<span class="fc bfc" id="L761" title="All 2 branches covered.">		while (rs.next()){</span>
+<span class="fc" id="L762">			ret.add(new ISumm(</span>
+<span class="fc" id="L763">					rs.getInt(&quot;Product&quot;),</span>
+<span class="fc" id="L764">					rs.getString(&quot;Name&quot;),</span>
+<span class="fc" id="L765">					rs.getInt(&quot;Quantity&quot;)</span>
+			));
+		}
+<span class="fc" id="L768">		statement.close();</span>
+<span class="fc" id="L769">		return ret;</span>
+	}
+
+	public void updateUser(String oldUsername, String username, String password, String type) throws SQLException {
+<span class="fc" id="L773">		Statement statement = connection.createStatement();</span>
+<span class="fc" id="L774">		String changeTableSql = String.format(&quot;&quot;&quot;</span>
+				UPDATE Users
+				SET Username = '%1$s', Password = '%2$s', Type = '%3$s'
+				WHERE Username = '%4$s';
+				&quot;&quot;&quot;, username,password,type,oldUsername);
+
+<span class="fc" id="L780">		statement.execute(changeTableSql);</span>
+<span class="fc" id="L781">		statement.close();</span>
+
+<span class="fc" id="L783">	}</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

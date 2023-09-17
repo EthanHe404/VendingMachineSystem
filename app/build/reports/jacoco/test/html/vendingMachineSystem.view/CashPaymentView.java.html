@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CashPaymentView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">CashPaymentView.java</span></div><h1>CashPaymentView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import javax.swing.*;
+
+import org.checkerframework.common.subtyping.qual.Bottom;
+import vendingMachineSystem.controller.CashPaymentState;
+import vendingMachineSystem.model.Change;
+import vendingMachineSystem.model.ChangeModel;
+
+import static java.lang.Math.round;
+
+public class CashPaymentView extends AbstractView {
+	
+	CashPaymentState state;
+	private float payment;
+	private boolean success;
+	private ArrayList&lt;Change&gt; income;
+	
+	
+<span class="fc" id="L25">	public CashPaymentView(CashPaymentState state) {</span>
+<span class="fc" id="L26">		this.state = state;</span>
+<span class="fc" id="L27">	}</span>
+
+	@Override
+	public void display() {
+<span class="fc" id="L31">		Window window = Window.getInstance();</span>
+		
+<span class="fc" id="L33">		Panel p = new Panel();</span>
+//		BoxLayout layout = new BoxLayout(p, BoxLayout.Y_AXIS);
+//		p.setLayout(layout);
+<span class="fc" id="L36">		p.setLayout(null);</span>
+		
+<span class="fc" id="L38">		this.addTotalPanel(p);</span>
+
+<span class="fc" id="L40">		addPaymentButtons(p);</span>
+
+<span class="fc" id="L42">		confirmPayment(p);</span>
+
+<span class="fc" id="L44">		window.updateWindow(p);</span>
+<span class="fc" id="L45">	}</span>
+	
+	private void addTotalPanel(Panel p) {
+//		Panel totalPanel = new Panel();
+//		totalPanel.setPreferredSize(new Dimension(650, 20));
+		
+<span class="fc" id="L51">		JLabel label = new JLabel(&quot;Cash Payment&quot;);</span>
+<span class="fc" id="L52">		Dimension size = label.getPreferredSize();</span>
+<span class="fc" id="L53">		label.setBounds(280, 10, size.width, size.height);</span>
+<span class="fc" id="L54">		p.add(label);</span>
+		
+<span class="fc" id="L56">		JLabel total = new JLabel(&quot;Total Price:&quot;);</span>
+<span class="fc" id="L57">		Dimension sizeTotal = label.getPreferredSize();</span>
+<span class="fc" id="L58">		total.setBounds(30, 30, sizeTotal.width, sizeTotal.height);</span>
+<span class="fc" id="L59">		p.add(total);</span>
+		
+<span class="fc" id="L61">		JLabel totalAmount = new JLabel(String.valueOf(state.calculateTotal()));</span>
+<span class="fc" id="L62">		size = label.getPreferredSize();</span>
+<span class="fc" id="L63">		totalAmount.setBounds(30 + sizeTotal.width,30, size.width, size.height);</span>
+<span class="fc" id="L64">		p.add(totalAmount);</span>
+		
+//		p.add(totalPanel);
+<span class="fc" id="L67">	}</span>
+
+	public void addPaymentButtons(Panel p){
+<span class="fc" id="L70">		JButton doneButton = new JButton(&quot;Done&quot;);</span>
+<span class="fc" id="L71">		doneButton.setBounds(560 - 100,220,100,40);</span>
+		//doneButton.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 10));
+<span class="fc" id="L73">		doneButton.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">				if (success) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">					if (payment == state.calculateTotal()){</span>
+<span class="nc" id="L79">						new FinishedPurchase();</span>
+<span class="nc" id="L80">						CashPaymentView.this.state.finishTransaction(0);</span>
+					} else{
+<span class="nc" id="L82">						new FinishedPurchase();</span>
+<span class="nc" id="L83">						CashPaymentView.this.state.finishTransaction(payment - state.calculateTotal());</span>
+					}
+				} else{
+<span class="nc" id="L86">					new FailDoneCashPay();</span>
+				}
+<span class="nc" id="L88">			}</span>
+		});
+<span class="fc" id="L90">		p.add(doneButton);</span>
+
+		// cancel
+<span class="fc" id="L93">		JButton returnButton = new JButton(&quot;Return&quot;);</span>
+<span class="fc" id="L94">		returnButton.setBounds(560,220,100,40);</span>
+		//cancelButton.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 10));
+<span class="fc" id="L96">		returnButton.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">				if (success) {</span>
+<span class="nc" id="L100">					System.out.println(&quot;Too late to cancel! Payment done!&quot;);</span>
+<span class="nc" id="L101">					new FailReturnAfterCashPay();</span>
+<span class="nc" id="L102">					return;</span>
+				}
+<span class="nc" id="L104">				CashPaymentView.this.state.changeToPurchaseState();</span>
+<span class="nc" id="L105">			}</span>
+		});
+<span class="fc" id="L107">		p.add(returnButton);</span>
+
+
+<span class="fc" id="L110">		JLabel amountLabel = new JLabel(&quot;Current Payment Amount:&quot;);</span>
+<span class="fc" id="L111">		Dimension sizeAmount = amountLabel.getPreferredSize();</span>
+<span class="fc" id="L112">		amountLabel.setBounds(30, 150, sizeAmount.width, sizeAmount.height);</span>
+<span class="fc" id="L113">		p.add(amountLabel);</span>
+
+<span class="fc" id="L115">		JLabel paymentLabel = new JLabel(String.valueOf(payment));</span>
+<span class="fc" id="L116">		Dimension paymentSize = new Dimension(100, sizeAmount.height);</span>
+<span class="fc" id="L117">		paymentLabel.setBounds(30 + sizeAmount.width + 5, 150, paymentSize.width, paymentSize.height);</span>
+<span class="fc" id="L118">		p.add(paymentLabel);</span>
+
+<span class="fc" id="L120">		JLabel payLabel = new JLabel(&quot;Select Payment&quot;);</span>
+<span class="fc" id="L121">		Dimension sizePay = payLabel.getPreferredSize();</span>
+<span class="fc" id="L122">		payLabel.setBounds(30, 50, sizePay.width, sizePay.height);</span>
+<span class="fc" id="L123">		p.add(payLabel);</span>
+
+<span class="fc" id="L125">		ChangeModel cm = new ChangeModel(false);</span>
+		try{
+<span class="fc" id="L127">			income = cm.allChanges();</span>
+<span class="nc" id="L128">		} catch (SQLException e){</span>
+<span class="nc" id="L129">			e.printStackTrace();</span>
+<span class="fc" id="L130">		}</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">		for (Change c: income) c.setQty(0);</span>
+
+
+<span class="fc" id="L134">		JButton button100 = new JButton(&quot;$100&quot;);</span>
+<span class="fc" id="L135">		Dimension size100 = button100.getPreferredSize();</span>
+<span class="fc" id="L136">		button100.setBounds(30,sizePay.height + 50 + 10, size100.width, size100.height);</span>
+<span class="fc" id="L137">		button100.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L141">				addOneChange(&quot;$100&quot;);</span>
+<span class="nc" id="L142">				payment += 100;</span>
+<span class="nc" id="L143">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L144">			}</span>
+		});
+<span class="fc" id="L146">		p.add(button100);</span>
+
+<span class="fc" id="L148">		JButton button50 = new JButton(&quot;$50&quot;);</span>
+<span class="fc" id="L149">		Dimension size50 = button50.getPreferredSize();</span>
+<span class="fc" id="L150">		button50.setBounds(30 + size100.width,sizePay.height + 60, size50.width, size50.height);</span>
+<span class="fc" id="L151">		button50.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L155">				addOneChange(&quot;$50&quot;);</span>
+<span class="nc" id="L156">				payment += 50;</span>
+<span class="nc" id="L157">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L158">			}</span>
+		});
+<span class="fc" id="L160">		p.add(button50);</span>
+
+<span class="fc" id="L162">		JButton button20 = new JButton(&quot;$20&quot;);</span>
+<span class="fc" id="L163">		Dimension size20 = button20.getPreferredSize();</span>
+<span class="fc" id="L164">		button20.setBounds(30 + size100.width + size50.width,sizePay.height + 60, size20.width, size20.height);</span>
+<span class="fc" id="L165">		button20.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L169">				addOneChange(&quot;$20&quot;);</span>
+<span class="nc" id="L170">				payment += 20;</span>
+<span class="nc" id="L171">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L172">			}</span>
+		});
+<span class="fc" id="L174">		p.add(button20);</span>
+
+<span class="fc" id="L176">		JButton button10 = new JButton(&quot;$10&quot;);</span>
+<span class="fc" id="L177">		Dimension size10 = button10.getPreferredSize();</span>
+<span class="fc" id="L178">		button10.setBounds(30 + size100.width + size50.width +size20.width,sizePay.height + 60, size10.width, size10.height);</span>
+<span class="fc" id="L179">		button10.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L183">				addOneChange(&quot;$10&quot;);</span>
+<span class="nc" id="L184">				payment += 10;</span>
+<span class="nc" id="L185">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L186">			}</span>
+		});
+<span class="fc" id="L188">		p.add(button10);</span>
+
+<span class="fc" id="L190">		JButton button5 = new JButton(&quot;$5&quot;);</span>
+<span class="fc" id="L191">		Dimension size5 = button5.getPreferredSize();</span>
+<span class="fc" id="L192">		button5.setBounds(30 + size100.width + size50.width +size20.width +size10.width,sizePay.height + 60, size5.width, size5.height);</span>
+<span class="fc" id="L193">		button5.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L196" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L197">				addOneChange(&quot;$5&quot;);</span>
+<span class="nc" id="L198">				payment += 5;</span>
+<span class="nc" id="L199">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L200">			}</span>
+		});
+<span class="fc" id="L202">		p.add(button5);</span>
+
+<span class="fc" id="L204">		JButton button2 = new JButton(&quot;$2&quot;);</span>
+<span class="fc" id="L205">		Dimension size2 = button2.getPreferredSize();</span>
+<span class="fc" id="L206">		button2.setBounds(30 + size100.width + size50.width +size20.width +size10.width + size5.width,sizePay.height + 60, size2.width, size2.height);</span>
+<span class="fc" id="L207">		button2.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L211">				addOneChange(&quot;$2&quot;);</span>
+<span class="nc" id="L212">				payment += 2;</span>
+<span class="nc" id="L213">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L214">			}</span>
+		});
+<span class="fc" id="L216">		p.add(button2);</span>
+
+<span class="fc" id="L218">		JButton button1 = new JButton(&quot;$1&quot;);</span>
+<span class="fc" id="L219">		Dimension size1 = button1.getPreferredSize();</span>
+<span class="fc" id="L220">		button1.setBounds(30 + size100.width + size50.width +size20.width +size10.width + size5.width + size2.width,sizePay.height + 60, size1.width, size1.height);</span>
+<span class="fc" id="L221">		button1.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L224" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L225">				addOneChange(&quot;$1&quot;);</span>
+<span class="nc" id="L226">				payment += 1;</span>
+<span class="nc" id="L227">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L228">			}</span>
+		});
+<span class="fc" id="L230">		p.add(button1);</span>
+
+<span class="fc" id="L232">		JButton button50c = new JButton(&quot;50c&quot;);</span>
+<span class="fc" id="L233">		Dimension size50c = button50c.getPreferredSize();</span>
+<span class="fc" id="L234">		button50c.setBounds(30 ,sizePay.height + 60 + size100.height, size50c.width, size50c.height);</span>
+<span class="fc" id="L235">		button50c.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L238" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L239">				addOneChange(&quot;50c&quot;);</span>
+<span class="nc" id="L240">				payment += 0.5;</span>
+<span class="nc" id="L241">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L242">			}</span>
+		});
+<span class="fc" id="L244">		p.add(button50c);</span>
+
+<span class="fc" id="L246">		JButton button20c = new JButton(&quot;20c&quot;);</span>
+<span class="fc" id="L247">		Dimension size20c = button20c.getPreferredSize();</span>
+<span class="fc" id="L248">		button20c.setBounds(30 + size50c.width,sizePay.height + 60 + size100.height, size20c.width, size20c.height);</span>
+<span class="fc" id="L249">		button20c.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L252" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L253">				addOneChange(&quot;20c&quot;);</span>
+<span class="nc" id="L254">				payment += 0.2;</span>
+<span class="nc" id="L255">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L256">			}</span>
+		});
+<span class="fc" id="L258">		p.add(button20c);</span>
+
+<span class="fc" id="L260">		JButton button10c = new JButton(&quot;10c&quot;);</span>
+<span class="fc" id="L261">		Dimension size10c = button10c.getPreferredSize();</span>
+<span class="fc" id="L262">		button10c.setBounds(30 + size50c.width + size20c.width,sizePay.height + 60 + size100.height, size10c.width, size10c.height);</span>
+<span class="fc" id="L263">		button10c.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L266" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L267">				addOneChange(&quot;10c&quot;);</span>
+<span class="nc" id="L268">				payment += 0.1;</span>
+<span class="nc" id="L269">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L270">			}</span>
+		});
+<span class="fc" id="L272">		p.add(button10c);</span>
+
+<span class="fc" id="L274">		JButton button5c = new JButton(&quot;5c&quot;);</span>
+<span class="fc" id="L275">		Dimension size5c = button5c.getPreferredSize();</span>
+<span class="fc" id="L276">		button5c.setBounds(30 + size50c.width + size20c.width + size10c.width,sizePay.height + 60 + size100.height, size5c.width, size5c.height);</span>
+<span class="fc" id="L277">		button5c.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L281">				addOneChange(&quot;5c&quot;);</span>
+<span class="nc" id="L282">				payment += 0.05;</span>
+<span class="nc" id="L283">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L284">			}</span>
+		});
+<span class="fc" id="L286">		p.add(button5c);</span>
+
+<span class="fc" id="L288">		JButton clearButton = new JButton(&quot;Clear&quot;);</span>
+<span class="fc" id="L289">		Dimension clearSize = clearButton.getPreferredSize();</span>
+<span class="fc" id="L290">		clearButton.setBounds(200,180,clearSize.width,clearSize.height);</span>
+<span class="fc" id="L291">		clearButton.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L294" title="All 2 branches missed.">				if (success) return;</span>
+<span class="nc" id="L295">				clearAllIncome();</span>
+<span class="nc" id="L296">				payment = 0;</span>
+<span class="nc" id="L297">				paymentLabel.setText(String.valueOf(round(payment * 100.0) / 100.0));</span>
+<span class="nc" id="L298">			}</span>
+		});
+<span class="fc" id="L300">		p.add(clearButton);</span>
+
+
+
+<span class="fc" id="L304">	}</span>
+
+	public void addOneChange(String name){
+<span class="nc bnc" id="L307" title="All 2 branches missed.">		for (Change c: income){</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">			if (c.getName().equals(name)){</span>
+<span class="nc" id="L309">				c.setQty(c.getQty() + 1);</span>
+			}
+<span class="nc" id="L311">		}</span>
+<span class="nc" id="L312">	}</span>
+
+	public void clearAllIncome(){
+<span class="nc bnc" id="L315" title="All 2 branches missed.">		for (Change c : income){</span>
+<span class="nc" id="L316">			c.setQty(0);</span>
+<span class="nc" id="L317">		}</span>
+<span class="nc" id="L318">	}</span>
+
+	public void confirmPayment(Panel p){
+<span class="fc" id="L321">		JLabel change = new JLabel();</span>
+//		Dimension sizeChange = change.getPreferredSize();
+//		change.setBounds(30, 210, sizeChange.width, sizeChange.height);
+<span class="fc" id="L324">		change.setBounds(30, 210, 600, 25);</span>
+<span class="fc" id="L325">		p.add(change);</span>
+
+<span class="fc" id="L327">		JButton confirm = new JButton(&quot;Confirm Payment&quot;);</span>
+<span class="fc" id="L328">		Dimension size = confirm.getPreferredSize();</span>
+<span class="fc" id="L329">		confirm.setBounds(30,180, size.width, size.height);</span>
+<span class="fc" id="L330">		confirm.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L333">				boolean timedout = CashPaymentView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L335">					return;</span>
+				}
+
+<span class="nc bnc" id="L338" title="All 2 branches missed.">				if (success) return;</span>
+
+<span class="nc bnc" id="L340" title="All 2 branches missed.">				if (payment &lt; state.calculateTotal()){</span>
+<span class="nc" id="L341">					float shortage = state.calculateTotal() - payment;</span>
+<span class="nc" id="L342">					new FailPayment(shortage);</span>
+
+<span class="nc bnc" id="L344" title="All 2 branches missed.">				} else if (payment == state.calculateTotal()) {</span>
+<span class="nc" id="L345">					success = true;</span>
+<span class="nc" id="L346">					change.setText(&quot;Payment Success! No Changes Need.&quot;);</span>
+<span class="nc" id="L347">					addIncomeToMachine();</span>
+
+				} else{
+<span class="nc" id="L350">					float extra = payment - state.calculateTotal();</span>
+<span class="nc" id="L351">					success = true;</span>
+
+					//gives back the changes
+<span class="nc" id="L354">					ArrayList&lt;Change&gt; changes = returnChanges((double) extra);</span>
+
+<span class="nc bnc" id="L356" title="All 2 branches missed.">					if (success) {</span>
+						//display changes to customer
+<span class="nc" id="L358">						displayChanges(changes, change);</span>
+
+						//add income cash to machine after return change successfully
+<span class="nc" id="L361">						addIncomeToMachine();</span>
+					} else{
+<span class="nc" id="L363">						change.setText(&quot;Payment Fail, not enough changes in Vending Machine.&quot;);</span>
+					}
+
+
+
+
+				}
+<span class="nc" id="L370">			}</span>
+		});
+<span class="fc" id="L372">		p.add(confirm);</span>
+
+
+
+<span class="fc" id="L376">	}</span>
+
+	public ArrayList&lt;Change&gt; returnChanges(double extra){
+		//check available cash in the machine
+<span class="nc" id="L380">		ChangeModel cm = new ChangeModel(false);</span>
+		ArrayList&lt;Change&gt; cash;
+		ArrayList&lt;Change&gt; changes;
+		try{
+<span class="nc" id="L384">			cash = cm.allChanges();</span>
+<span class="nc" id="L385">			changes = cm.allChanges();</span>
+<span class="nc" id="L386">		} catch (SQLException e){</span>
+<span class="nc" id="L387">			throw new RuntimeException(e);</span>
+<span class="nc" id="L388">		}</span>
+
+		//set quantity of all change in changes list to zero
+<span class="nc bnc" id="L391" title="All 2 branches missed.">		for (Change c: changes){</span>
+<span class="nc" id="L392">			c.setQty(0);</span>
+<span class="nc" id="L393">		}</span>
+
+<span class="nc bnc" id="L395" title="All 2 branches missed.">		while (extra &gt; 0.05){</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">			for (Change change: cash){</span>
+				//find the first available cash that is smaller than extra
+<span class="nc bnc" id="L398" title="All 4 branches missed.">				if (round(change.getValue() * 100.0)/100.0 &lt;= round(extra * 100.0)/100.0 &amp;&amp; change.getQty() &gt; 0){</span>
+					//took away the cash from machine
+<span class="nc" id="L400">					extra -= round(change.getValue() * 100.0)/100.0;</span>
+<span class="nc" id="L401">					extra = round(extra * 100.0)/100.0;</span>
+<span class="nc" id="L402">					change.setQty(change.getQty() - 1);</span>
+
+//					System.out.println(&quot;extra: &quot;+extra);
+
+					//add the cash to changes
+<span class="nc bnc" id="L407" title="All 2 branches missed.">					for (Change c: changes) {</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">						if (c.getName().equals(change.getName())){</span>
+<span class="nc" id="L409">							c.setQty(c.getQty() + 1);</span>
+						}
+<span class="nc" id="L411">					}</span>
+<span class="nc" id="L412">					break;</span>
+				}
+<span class="nc" id="L414">			}</span>
+
+<span class="nc" id="L416">			boolean hasChange = false;</span>
+			//check all cash smaller than extra, all qty = 0 means not enough change, fail!
+<span class="nc bnc" id="L418" title="All 2 branches missed.">			for (Change c: cash){</span>
+<span class="nc bnc" id="L419" title="All 4 branches missed.">				if (round(c.getValue() * 100.0)/100.0 &lt;= round(extra * 100.0)/100.0 &amp;&amp; c.getQty() &gt; 0){</span>
+<span class="nc" id="L420">					hasChange = true;</span>
+				}
+<span class="nc" id="L422">			}</span>
+<span class="nc bnc" id="L423" title="All 4 branches missed.">			if (!hasChange &amp;&amp; extra &gt; 0.05){</span>
+<span class="nc" id="L424">				System.out.println(&quot;Payment Fail, Not Enough Change.&quot;);</span>
+<span class="nc" id="L425">				success = false;</span>
+<span class="nc" id="L426">				break;</span>
+			}
+
+
+<span class="nc" id="L430">		}</span>
+
+//		//update the Change table in database
+<span class="nc bnc" id="L433" title="All 2 branches missed.">		for (Change c: cash){</span>
+<span class="nc" id="L434">			CashPaymentView.this.state.updateCash(c.getName(), Integer.toString(c.getQty()));</span>
+<span class="nc" id="L435">		}</span>
+
+
+<span class="nc" id="L438">		return changes;</span>
+	}
+
+	public void displayChanges(ArrayList&lt;Change&gt; changes, JLabel changeLabel){
+<span class="nc" id="L442">		String msg = &quot;Payment Success! Changes:&quot;;</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">		for (Change c: changes){</span>
+//			System.out.println(c.getName() +&quot; &quot;+ c.getQty());
+<span class="nc bnc" id="L445" title="All 2 branches missed.">			if (c.getQty() &gt; 0){</span>
+<span class="nc" id="L446">				msg += c.getName() +&quot;: &quot;+ c.getQty() + &quot;  &quot;;</span>
+			}
+<span class="nc" id="L448">		}</span>
+
+<span class="nc" id="L450">		changeLabel.setText(msg);</span>
+
+<span class="nc" id="L452">	}</span>
+
+	public void addIncomeToMachine(){
+<span class="nc" id="L455">		ChangeModel cm = new ChangeModel(false);</span>
+		ArrayList&lt;Change&gt; original;
+		try{
+<span class="nc" id="L458">			original = cm.allChanges();</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">			for (int i = 0; i &lt; income.size(); i++){</span>
+<span class="nc" id="L460">				int newQty = income.get(i).getQty() + original.get(i).getQty();</span>
+<span class="nc" id="L461">				CashPaymentView.this.state.updateCash(income.get(i).getName(), Integer.toString(newQty));</span>
+			}
+<span class="nc" id="L463">		} catch (SQLException ec){</span>
+<span class="nc" id="L464">			ec.printStackTrace();</span>
+<span class="nc" id="L465">		}</span>
+<span class="nc" id="L466">	}</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

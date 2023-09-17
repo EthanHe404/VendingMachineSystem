@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.ManageUserStateTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:11" hostname="ethanAir.modem" time="0.222">
+  <properties/>
+  <testcase name="No Timeout" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.026"/>
+  <testcase name="Timeout" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.041"/>
+  <testcase name="get all username" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.012"/>
+  <testcase name="Return To Logged In Page" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.025"/>
+  <testcase name="refresh password" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.018"/>
+  <testcase name="get all user" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.01"/>
+  <testcase name="update user" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.012"/>
+  <testcase name="Get username" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.005"/>
+  <testcase name="refresh" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.01"/>
+  <testcase name="Successfully create &amp; remove account" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.014"/>
+  <testcase name="Fail to create account" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.016"/>
+  <testcase name="get user info" classname="vendingMachineSystem.controller.ManageUserStateTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

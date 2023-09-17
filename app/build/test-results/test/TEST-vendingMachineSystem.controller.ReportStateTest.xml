@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.ReportStateTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:02" hostname="ethanAir.modem" time="0.389">
+  <properties/>
+  <testcase name="oneColOutString()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.043"/>
+  <testcase name="oneLineOutString()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.047"/>
+  <testcase name="noLineOutString()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.034"/>
+  <testcase name="filenameEnds()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.065"/>
+  <testcase name="moreLineOutString()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.03"/>
+  <testcase name="cancelTest()" classname="vendingMachineSystem.controller.ReportStateTest" time="0.153"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PurchaseItemView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">PurchaseItemView.java</span></div><h1>PurchaseItemView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+
+import vendingMachineSystem.controller.PurchaseItemState;
+import vendingMachineSystem.controller.VendingMachineState;
+
+public class PurchaseItemView extends AbstractView {
+
+	PurchaseItemState state;
+	LinkedList&lt;PurchaseItemLine&gt; itemsToPurchase;
+	String[][] itemDataArray;
+	ItemData itemData;
+	JTable purchaseItemTable;
+	
+<span class="fc" id="L26">	public PurchaseItemView(PurchaseItemState state) {</span>
+<span class="fc" id="L27">		this.state = state;</span>
+<span class="fc" id="L28">		this.itemsToPurchase = new LinkedList&lt;PurchaseItemLine&gt;();</span>
+<span class="fc" id="L29">		itemDataArray = state.getItemData();</span>
+<span class="fc" id="L30">		itemData = new ItemData(itemDataArray);</span>
+<span class="fc" id="L31">	}</span>
+	
+	private class ItemData {
+		ArrayList&lt;String&gt; itemNames;
+		Map&lt;String, Integer&gt; availableQty;
+		Map&lt;String, Float&gt; prices;
+		
+<span class="fc" id="L38">		public ItemData (String[][] itemDataArray) {</span>
+<span class="fc" id="L39">			itemNames = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L40">			availableQty = new HashMap&lt;String, Integer&gt;();</span>
+<span class="fc" id="L41">			prices = new HashMap&lt;String, Float&gt;();</span>
+			
+<span class="fc bfc" id="L43" title="All 2 branches covered.">			for (String[] line: itemDataArray) {</span>
+<span class="fc" id="L44">				String itemName = line[1];</span>
+<span class="fc" id="L45">				String quantity = line[2];</span>
+<span class="fc" id="L46">				String price = line[3];</span>
+<span class="fc" id="L47">				itemNames.add(itemName);</span>
+<span class="fc" id="L48">				availableQty.put(itemName, Integer.parseInt(quantity));</span>
+<span class="fc" id="L49">				prices.put(itemName, Float.parseFloat(price));</span>
+			}
+<span class="fc" id="L51">		}</span>
+		
+		public void addQty(String itemName, int qty) {
+<span class="nc" id="L54">			int prevQty = availableQty.get(itemName);</span>
+<span class="nc" id="L55">			availableQty.put(itemName, prevQty + qty);</span>
+<span class="nc" id="L56">		}</span>
+		
+		public int getQty(String itemName) {
+<span class="nc" id="L59">			return availableQty.get(itemName);</span>
+		}
+		
+		public float getPrice(String itemName) {
+<span class="nc" id="L63">			return prices.get(itemName);</span>
+		}
+		
+		public String[] getItemNames() {
+<span class="nc" id="L67">			return (String[]) itemNames.toArray(new String[0]);</span>
+		}
+	}
+	
+	private class PurchaseItemLine extends JPanel {
+
+		String itemName;
+		int quantity;
+		float price;
+		
+<span class="nc" id="L77">		public PurchaseItemLine(String item, int quantity) {</span>
+<span class="nc" id="L78">			this.itemName = item;</span>
+<span class="nc" id="L79">			this.quantity = quantity;</span>
+<span class="nc" id="L80">			this.price = quantity * PurchaseItemView.this.itemData.getPrice(item);</span>
+<span class="nc" id="L81">		}</span>
+		
+		public String getItemName() {
+<span class="nc" id="L84">			return this.itemName;</span>
+		}
+		
+		public int getQty() {
+<span class="nc" id="L88">			return this.quantity;</span>
+		}
+		
+		public void addQty(int qty) {
+<span class="nc" id="L92">			this.quantity = this.quantity + qty;</span>
+<span class="nc" id="L93">			this.price = quantity * PurchaseItemView.this.itemData.getPrice(this.itemName);</span>
+<span class="nc" id="L94">		}</span>
+		
+		public float getPrice() {
+<span class="nc" id="L97">			return this.price;</span>
+		}
+		
+	}
+	
+	private class AddItemDialog extends JDialog {
+		
+		JComboBox items;
+		JSpinner quantityField;
+		SpinnerNumberModel numberModel;
+		String selectedItem;
+		int quantity;
+		
+<span class="nc" id="L110">		public AddItemDialog() {</span>
+			
+<span class="nc" id="L112">			setSize(200, 200);</span>
+<span class="nc" id="L113">			setLayout(new BorderLayout());</span>
+			
+<span class="nc" id="L115">			JLabel title = new JLabel(&quot;Add Item to Purchase&quot;, SwingConstants.CENTER);</span>
+<span class="nc" id="L116">			title.setVerticalAlignment(SwingConstants.CENTER);</span>
+<span class="nc" id="L117">			add(title, BorderLayout.NORTH);</span>
+			
+<span class="nc" id="L119">			JPanel addItemPanel = new JPanel();</span>
+			
+<span class="nc" id="L121">			String[] itemList = PurchaseItemView.this.itemData.getItemNames();</span>
+<span class="nc" id="L122">			items = new JComboBox(itemList);</span>
+<span class="nc" id="L123">			items.addActionListener(new ActionListener() {</span>
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L127">					boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">					if (timedout) {</span>
+<span class="nc" id="L129">						AddItemDialog.this.dispose();</span>
+<span class="nc" id="L130">						return;</span>
+					}
+<span class="nc" id="L132">					String selectedItem = String.valueOf(items.getSelectedItem());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">					if (AddItemDialog.this.selectedItem != selectedItem) {</span>
+<span class="nc" id="L134">						System.out.println(selectedItem);</span>
+<span class="nc" id="L135">						AddItemDialog.this.selectedItem = selectedItem;</span>
+<span class="nc" id="L136">						addItemPanel.remove(quantityField);</span>
+<span class="nc" id="L137">						AddItemDialog.this.addQtySpinner(addItemPanel, selectedItem);</span>
+<span class="nc" id="L138">			            AddItemDialog.this.revalidate();</span>
+					}
+<span class="nc" id="L140">				}</span>
+				
+			});
+<span class="nc" id="L143">			addItemPanel.add(items);</span>
+			
+<span class="nc" id="L145">			selectedItem = itemList[0];</span>
+<span class="nc" id="L146">			addQtySpinner(addItemPanel, String.valueOf(selectedItem));</span>
+            
+<span class="nc" id="L148">            add(addItemPanel, BorderLayout.CENTER);</span>
+			
+<span class="nc" id="L150">            JPanel buttonPanel = new JPanel();</span>
+            
+<span class="nc" id="L152">			JButton addItemButton = new JButton(&quot;Add Item&quot;);</span>
+<span class="nc" id="L153">			addItemButton.addActionListener(new ActionListener() {</span>
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L157">					boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">					if (timedout) {</span>
+<span class="nc" id="L159">						AddItemDialog.this.dispose();</span>
+<span class="nc" id="L160">						return;</span>
+					}
+<span class="nc" id="L162">					quantity = (Integer) numberModel.getValue();</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">					if (quantity &gt; 0) {</span>
+<span class="nc" id="L164">						boolean hasItem = false;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">						for (PurchaseItemLine line: PurchaseItemView.this.itemsToPurchase) {</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">							if (line.getItemName().equals(selectedItem)) {</span>
+<span class="nc" id="L167">								line.addQty(quantity);</span>
+<span class="nc" id="L168">								hasItem = true;</span>
+							}
+<span class="nc" id="L170">						}</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">						if (!hasItem) {</span>
+<span class="nc" id="L172">							PurchaseItemView.this.itemsToPurchase.add(new PurchaseItemLine(selectedItem, quantity));							</span>
+						}
+<span class="nc" id="L174">						PurchaseItemView.this.itemData.addQty(selectedItem, -quantity);						</span>
+					}
+<span class="nc" id="L176">					AddItemDialog.this.dispose();</span>
+<span class="nc" id="L177">					PurchaseItemView.this.display();</span>
+<span class="nc" id="L178">				}</span>
+				
+			});
+<span class="nc" id="L181">			buttonPanel.add(addItemButton);</span>
+			
+<span class="nc" id="L183">			JButton cancelButton = new JButton(&quot;Cancel&quot;);</span>
+<span class="nc" id="L184">			cancelButton.addActionListener(new ActionListener() {</span>
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L188">					PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc" id="L189">					AddItemDialog.this.dispose();</span>
+<span class="nc" id="L190">				}</span>
+				
+			});
+<span class="nc" id="L193">			buttonPanel.add(cancelButton);</span>
+<span class="nc" id="L194">			add(buttonPanel, BorderLayout.SOUTH);</span>
+			
+<span class="nc" id="L196">			setVisible(true);</span>
+<span class="nc" id="L197">			setAlwaysOnTop(true);</span>
+<span class="nc" id="L198">		}</span>
+		
+		private void addQtySpinner(JPanel addItemPanel, String name) {
+<span class="nc" id="L201">			numberModel = new SpinnerNumberModel(</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">				PurchaseItemView.this.itemData.getQty(name) &gt; 0 ? new Integer(1): new Integer(0), //value</span>
+				new Integer(0), //min
+<span class="nc" id="L204">				new Integer(PurchaseItemView.this.itemData.getQty(name)),</span>
+				new Integer(1)
+			);
+<span class="nc" id="L207">            quantityField = new JSpinner(numberModel);</span>
+<span class="nc" id="L208">            quantityField.addChangeListener(new ChangeListener() {</span>
+
+				@Override
+				public void stateChanged(ChangeEvent e) {
+<span class="nc" id="L212">					boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">					if (timedout) {</span>
+<span class="nc" id="L214">						AddItemDialog.this.dispose();</span>
+<span class="nc" id="L215">						return;</span>
+					}
+<span class="nc" id="L217">				}</span>
+            	
+            });
+<span class="nc" id="L220">            addItemPanel.add(quantityField);</span>
+<span class="nc" id="L221">		}</span>
+		
+	}
+	
+	private class PurchaseItemsTableModel extends AbstractTableModel {
+		
+<span class="fc" id="L227">		private String[] columnNames = { &quot;Item&quot;, &quot;Quantity&quot;, &quot;Price&quot;, &quot;&quot; };</span>
+		private Object[][] data;
+		
+<span class="fc" id="L230">		public PurchaseItemsTableModel(LinkedList&lt;PurchaseItemLine&gt; itemsToPurchase) {</span>
+<span class="fc" id="L231">			float total = 0;</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">			for (PurchaseItemLine line: itemsToPurchase) {</span>
+<span class="nc" id="L233">				JButton deleteButton = new JButton(&quot;Delete Item&quot;);</span>
+<span class="nc" id="L234">				Object[] tableLine = {</span>
+<span class="nc" id="L235">					line.getItemName(),</span>
+<span class="nc" id="L236">					(Integer)line.getQty(),</span>
+<span class="nc" id="L237">					String.format(&quot;%.2f&quot;, (Float)line.getPrice()),</span>
+					deleteButton
+				};
+<span class="nc bnc" id="L240" title="All 2 branches missed.">				if (data == null) {</span>
+<span class="nc" id="L241">					data = new Object[1][4];</span>
+<span class="nc" id="L242">					data[0] = tableLine;</span>
+				}
+				else {
+<span class="nc" id="L245">					data = appendToArray(data, tableLine);</span>
+				}
+<span class="nc" id="L247">				total += line.getPrice();</span>
+<span class="nc" id="L248">			}</span>
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">			if (data != null) {</span>
+<span class="nc" id="L250">				Object[] tableLine = {</span>
+					&quot;&quot;,
+					&quot;Total&quot;,
+<span class="nc" id="L253">					String.format(&quot;%.2f&quot;, (Float)total),</span>
+					null
+				};
+<span class="nc" id="L256">				data = appendToArray(data, tableLine);</span>
+			}
+<span class="fc" id="L258">			return;</span>
+		}
+		
+		private Object[][] appendToArray(Object[][] data, Object[] newLine) {
+<span class="nc" id="L262">			int oldLength = data.length;</span>
+<span class="nc" id="L263">			Object[][] newArray = new Object[oldLength + 1][data[0].length];</span>
+<span class="nc" id="L264">			int rowNumber = 0;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">			for (Object[] row: data) {</span>
+<span class="nc" id="L266">				newArray[rowNumber] = row;</span>
+<span class="nc" id="L267">				rowNumber++;</span>
+			}
+<span class="nc" id="L269">			newArray[newArray.length-1] = newLine;</span>
+<span class="nc" id="L270">			return newArray;</span>
+		}
+
+		@Override
+		public int getRowCount() {
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">			return data == null ? 0 : data.length;</span>
+		}
+		
+	    @Override
+	    public String getColumnName(int column) {
+<span class="fc" id="L280">	        return columnNames[column];</span>
+	    }
+
+		@Override
+		public int getColumnCount() {
+<span class="fc" id="L285">			return columnNames.length;</span>
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+<span class="nc bnc" id="L290" title="All 2 branches missed.">			return data == null ? null : data[rowIndex][columnIndex];</span>
+		}
+		
+	}
+	
+	@Override
+	public void display() {
+<span class="fc" id="L297">		Window window = Window.getInstance();</span>
+		
+<span class="fc" id="L299">		Panel p = new Panel();</span>
+<span class="fc" id="L300">		BoxLayout layout = new BoxLayout(p, BoxLayout.Y_AXIS);</span>
+<span class="fc" id="L301">		p.setLayout(layout);</span>
+		
+<span class="fc" id="L303">		this.addMenu(p);</span>
+<span class="fc" id="L304">		this.addPurchaseItemPanel(p);</span>
+<span class="fc" id="L305">		this.addActionButtons(p);</span>
+		
+<span class="fc" id="L307">		window.updateWindow(p);</span>
+
+<span class="fc" id="L309">	}</span>
+	
+	private void addMenu(Panel p) {
+<span class="fc" id="L312">		String[] names = {&quot;Category&quot;, &quot;Item&quot;, &quot;Quantity&quot;, &quot;Price&quot;};</span>
+<span class="fc" id="L313">		JTable tab = new JTable(itemDataArray, names);</span>
+<span class="fc" id="L314">		JScrollPane tab_scroller = new JScrollPane(tab);</span>
+<span class="fc" id="L315">		tab_scroller.setPreferredSize(new Dimension(650, 100));</span>
+<span class="fc" id="L316">		p.add(tab_scroller);</span>
+<span class="fc" id="L317">	}</span>
+	
+	private void addPurchaseItemPanel(Panel p) {
+<span class="fc" id="L320">		Panel addItemPanel = new Panel();</span>
+<span class="fc" id="L321">		addItemPanel.setLayout(new FlowLayout());</span>
+<span class="fc" id="L322">		JLabel recLabel = new JLabel(&quot;Purchase Items&quot;);</span>
+<span class="fc" id="L323">		recLabel.setPreferredSize(new Dimension(650, 20));</span>
+<span class="fc" id="L324">		addItemPanel.add(recLabel, FlowLayout.LEFT);</span>
+<span class="fc" id="L325">		addItemPanel.setPreferredSize(new Dimension(650, 20));		</span>
+<span class="fc" id="L326">		p.add(addItemPanel);</span>
+		
+<span class="fc" id="L328">		purchaseItemTable = new JTable(new PurchaseItemsTableModel(itemsToPurchase));</span>
+<span class="fc" id="L329">		purchaseItemTable.getColumn(&quot;&quot;).setCellRenderer(new ButtonRenderer());</span>
+		
+<span class="fc" id="L331">		purchaseItemTable.addMouseListener(new java.awt.event.MouseAdapter() {</span>
+		    @Override
+		    public void mouseClicked(java.awt.event.MouseEvent evt) {
+		    	
+<span class="nc" id="L335">		        int row = purchaseItemTable.rowAtPoint(evt.getPoint());</span>
+<span class="nc" id="L336">		        int col = purchaseItemTable.columnAtPoint(evt.getPoint());</span>
+<span class="nc bnc" id="L337" title="All 4 branches missed.">		        if(col == 3 &amp;&amp; row != purchaseItemTable.getRowCount() - 1) {</span>
+<span class="nc" id="L338">					boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">					if (timedout) {</span>
+<span class="nc" id="L340">						return;</span>
+					}
+<span class="nc" id="L342">		        	PurchaseItemLine line = PurchaseItemView.this.itemsToPurchase.get(row);</span>
+<span class="nc" id="L343">					PurchaseItemView.this.itemData.addQty(line.getItemName(), line.getQty());</span>
+<span class="nc" id="L344">					PurchaseItemView.this.itemsToPurchase.remove(line);</span>
+<span class="nc" id="L345">					PurchaseItemView.this.display();</span>
+		        }
+<span class="nc" id="L347">		    }</span>
+		});
+		
+<span class="fc" id="L350">		JScrollPane purchaseItemScroller = new JScrollPane(purchaseItemTable);</span>
+<span class="fc" id="L351">		purchaseItemScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);</span>
+<span class="fc" id="L352">		purchaseItemScroller.setPreferredSize(new Dimension(650, 100));</span>
+		
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">		for (PurchaseItemLine item: itemsToPurchase) {</span>
+<span class="nc" id="L355">			purchaseItemTable.add(item);</span>
+<span class="nc" id="L356">		}			</span>
+		
+<span class="fc" id="L358">		p.add(purchaseItemScroller);</span>
+<span class="fc" id="L359">	}</span>
+	
+<span class="fc" id="L361">	private class ButtonRenderer implements TableCellRenderer {</span>
+
+		  public Component getTableCellRendererComponent(JTable table, Object value,
+		      boolean isSelected, boolean hasFocus, int row, int column) {
+<span class="nc" id="L365">			  return (JButton) value;</span>
+		  }
+	}
+	
+	private void addPurchaseItemLine(Panel p) {
+<span class="nc" id="L370">		new AddItemDialog();</span>
+<span class="nc" id="L371">		this.display();</span>
+<span class="nc" id="L372">	}</span>
+
+	private void addActionButtons(Panel p) {
+<span class="fc" id="L375">		Panel buttonPanel = new Panel();</span>
+<span class="fc" id="L376">		FlowLayout flowLayout = new FlowLayout();</span>
+<span class="fc" id="L377">		buttonPanel.setLayout(flowLayout);</span>
+		
+<span class="fc" id="L379">		JButton addPurchaseItemButton = new JButton(&quot;Add Item&quot;);</span>
+<span class="fc" id="L380">		addPurchaseItemButton.addActionListener(new ActionListener() {</span>
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L383">				boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L385">					return;</span>
+				}
+<span class="nc" id="L387">				PurchaseItemView.this.addPurchaseItemLine(buttonPanel);</span>
+<span class="nc" id="L388">			}</span>
+		});
+<span class="fc" id="L390">		buttonPanel.add(addPurchaseItemButton);</span>
+		
+<span class="fc" id="L392">		JButton cashPayButton = new JButton(&quot;Pay with Cash&quot;);</span>
+<span class="fc" id="L393">		cashPayButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L397">				boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L399">					return;</span>
+				}
+<span class="nc" id="L401">				Map&lt;String, Integer&gt; itemsToPurchase = PurchaseItemView.this.getItemsToPurchase();</span>
+<span class="nc" id="L402">				PurchaseItemView.this.state.changeToCashPaymentPage(itemsToPurchase);</span>
+<span class="nc" id="L403">			}</span>
+			
+		});
+<span class="fc" id="L406">		buttonPanel.add(cashPayButton);</span>
+		
+<span class="fc" id="L408">		JButton cardPayButton = new JButton(&quot;Pay with Card&quot;);</span>
+<span class="fc" id="L409">		cardPayButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L413">				boolean timedout = PurchaseItemView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L415">					return;</span>
+				}
+<span class="nc" id="L417">				Map&lt;String, Integer&gt; itemsToPurchase = PurchaseItemView.this.getItemsToPurchase();</span>
+<span class="nc" id="L418">				PurchaseItemView.this.state.changeToCardPaymentPage(itemsToPurchase);</span>
+<span class="nc" id="L419">			}</span>
+			
+		});
+
+<span class="fc" id="L423">		cardPayButton.setBounds( 170, 250, 150, 25 );</span>
+<span class="fc" id="L424">		buttonPanel.add(cardPayButton);</span>
+		
+		JButton cancelButton;
+
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">		if(PurchaseItemView.this.state.getLoggedInStatus()){</span>
+<span class="fc" id="L429">			cancelButton = new JButton(&quot;Cancel Transaction &amp; Return&quot;);</span>
+		}else{
+<span class="nc" id="L431">			cancelButton = new JButton(&quot;Cancel Transaction&quot;);</span>
+		}
+
+<span class="fc" id="L434">		cancelButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L438">				PurchaseItemView.this.state.cancelTransaction();</span>
+<span class="nc" id="L439">			}</span>
+			
+		});
+<span class="fc" id="L442">		buttonPanel.add(cancelButton);</span>
+		
+<span class="fc" id="L444">		p.add(buttonPanel);</span>
+<span class="fc" id="L445">	}</span>
+	
+	private Map&lt;String, Integer&gt; getItemsToPurchase() {
+<span class="nc" id="L448">		Map&lt;String, Integer&gt; itemMap = new HashMap&lt;String, Integer&gt;();</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">		for (PurchaseItemLine itemLine: itemsToPurchase) {</span>
+<span class="nc" id="L450">			String itemName = itemLine.getItemName();</span>
+<span class="nc" id="L451">			int qty = itemLine.getQty();</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">			if (itemMap.containsKey(itemName)) {</span>
+<span class="nc" id="L453">				int prevQty = itemMap.get(itemName);</span>
+<span class="nc" id="L454">				itemMap.put(itemName, prevQty + qty);</span>
+<span class="nc" id="L455">			}</span>
+			else {
+<span class="nc" id="L457">				itemMap.put(itemName, qty);</span>
+			}
+<span class="nc" id="L459">		}</span>
+<span class="nc" id="L460">		return itemMap;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

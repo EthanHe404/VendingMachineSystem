@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">LoginView.java</span></div><h1>LoginView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import vendingMachineSystem.controller.*;
+
+public class LoginView extends AbstractView {
+
+	LoginState state;
+	Dimension size;
+	JTextField username;
+	JPasswordField password;
+
+<span class="nc" id="L19">	public LoginView(LoginState state) {</span>
+<span class="nc" id="L20">		this.state = state;</span>
+		// TODO Auto-generated constructor stub
+<span class="nc" id="L22">	}</span>
+
+	@Override
+	public void display() {
+		// TODO Auto-generated method stub
+<span class="nc" id="L27">		Window window = Window.getInstance();</span>
+		
+<span class="nc" id="L29">		Panel p = new Panel();</span>
+<span class="nc" id="L30">		p.setLayout(null);</span>
+<span class="nc" id="L31">		JLabel pageLabel = new JLabel(&quot;Welcome! Please Log In Below.&quot;);</span>
+<span class="nc" id="L32">		size = pageLabel.getPreferredSize();</span>
+<span class="nc" id="L33">		pageLabel.setBounds(100, 30, size.width, size.height);</span>
+<span class="nc" id="L34">		p.add(pageLabel);</span>
+
+<span class="nc" id="L36">		JLabel usernameLabel = new JLabel(&quot;Username:&quot;);</span>
+<span class="nc" id="L37">		size = usernameLabel.getPreferredSize();</span>
+<span class="nc" id="L38">		usernameLabel.setBounds(70, 70, size.width, size.height);</span>
+<span class="nc" id="L39">		p.add(usernameLabel);</span>
+
+<span class="nc" id="L41">		username = new JTextField(18);</span>
+<span class="nc" id="L42">		username.setBounds(140, 65, 150, 26);</span>
+<span class="nc" id="L43">		p.add(username);</span>
+
+<span class="nc" id="L45">		JLabel passwordLabel = new JLabel(&quot;Password:&quot;);</span>
+<span class="nc" id="L46">		size = passwordLabel.getPreferredSize();</span>
+<span class="nc" id="L47">		passwordLabel.setBounds(70, 100, size.width, size.height);</span>
+<span class="nc" id="L48">		p.add(passwordLabel);</span>
+
+<span class="nc" id="L50">		password = new JPasswordField(18);</span>
+<span class="nc" id="L51">		password.setEchoChar('*');</span>
+<span class="nc" id="L52">		password.setBounds(140, 95, 150, 26);</span>
+<span class="nc" id="L53">		p.add(password);</span>
+
+
+<span class="nc" id="L56">		JButton loginButton = new JButton(&quot;Log In&quot;);</span>
+<span class="nc" id="L57">		loginButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L61">				boolean timedout = LoginView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L63">					return;</span>
+				}
+<span class="nc" id="L65">				String usernameEntered = username.getText().toLowerCase();</span>
+<span class="nc" id="L66">				String passwordEntered = new String(password.getPassword());</span>
+				try {
+<span class="nc" id="L68">					String passwordFound = LoginView.this.state.getPassword(usernameEntered);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">					if (passwordEntered.equals(passwordFound)){</span>
+<span class="nc" id="L70">						String type = LoginView.this.state.getUserType(usernameEntered);</span>
+<span class="nc" id="L71">						LoginView.this.state.changeToLoggedInPage(usernameEntered, type);</span>
+<span class="nc" id="L72">					}else{</span>
+<span class="nc" id="L73">						new FailLogin();</span>
+					}
+<span class="nc" id="L75">				} catch (SQLException ex) {</span>
+<span class="nc" id="L76">					ex.printStackTrace();</span>
+<span class="nc" id="L77">				}</span>
+
+<span class="nc" id="L79">			}</span>
+			
+		});
+
+<span class="nc" id="L83">		size = loginButton.getPreferredSize();</span>
+<span class="nc" id="L84">		loginButton.setBounds(150, 120, size.width, size.height);</span>
+<span class="nc" id="L85">		p.add(loginButton);</span>
+
+<span class="nc" id="L87">		JButton registerButton = new JButton(&quot;Register&quot;);</span>
+<span class="nc" id="L88">		registerButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L92">				boolean timedout = LoginView.this.state.checkTransactionTimeout();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">				if (timedout) {</span>
+<span class="nc" id="L94">					return;</span>
+				}
+<span class="nc" id="L96">				LoginView.this.state.changeToRegistrationPage();</span>
+<span class="nc" id="L97">			}</span>
+
+		});
+
+<span class="nc" id="L101">		size = registerButton.getPreferredSize();</span>
+<span class="nc" id="L102">		registerButton.setBounds(150, 150, size.width, size.height);</span>
+<span class="nc" id="L103">		p.add(registerButton);</span>
+
+<span class="nc" id="L105">		JButton CancelButton = new JButton(&quot;Cancel&quot;);</span>
+<span class="nc" id="L106">		CancelButton.addActionListener(new ActionListener() {</span>
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L110">				LoginView.this.state.cancelTransaction();</span>
+<span class="nc" id="L111">			}</span>
+
+		});
+
+<span class="nc" id="L115">		size = CancelButton.getPreferredSize();</span>
+<span class="nc" id="L116">		CancelButton.setBounds(300, 200, size.width, size.height);</span>
+<span class="nc" id="L117">		p.add(CancelButton);</span>
+		
+<span class="nc" id="L119">		window.updateWindow(p);</span>
+<span class="nc" id="L120">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

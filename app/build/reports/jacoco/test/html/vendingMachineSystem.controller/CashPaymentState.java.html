@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CashPaymentState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.controller</a> &gt; <span class="el_source">CashPaymentState.java</span></div><h1>CashPaymentState.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.controller;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.*;
+
+import vendingMachineSystem.VendingMachine;
+import vendingMachineSystem.model.TransactionModel;
+import vendingMachineSystem.view.CashPaymentView;
+
+
+public class CashPaymentState extends VendingMachineState {
+
+	Map&lt;String, Integer&gt; itemsToPurchase;
+	private VendingMachineState prevState;
+	//the prevState is the purchaseItemState
+	String[][] itemData;
+	String[][] changeData;
+<span class="fc" id="L20">	int timeoutPeriodSeconds = 120;</span>
+	
+	public CashPaymentState(VendingMachine vm, Map&lt;String, Integer&gt; itemsToPurchase, VendingMachineState prevState) {
+<span class="fc" id="L23">		super(vm);</span>
+<span class="fc" id="L24">		this.itemsToPurchase = itemsToPurchase;</span>
+<span class="fc" id="L25">		itemData = super.getItemData();</span>
+<span class="fc" id="L26">		changeData = super.getCashData();</span>
+<span class="fc" id="L27">		this.prevState = prevState;</span>
+<span class="fc" id="L28">	}</span>
+
+	@Override
+	public void run() {
+<span class="fc" id="L32">		CashPaymentView view = new CashPaymentView(this);</span>
+<span class="fc" id="L33">		view.display();</span>
+<span class="fc" id="L34">	}</span>
+	
+	public float calculateTotal() {
+<span class="fc" id="L37">		float total = 0;</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">		for (Map.Entry&lt;String, Integer&gt; entry: itemsToPurchase.entrySet()) {</span>
+<span class="fc" id="L39">			String itemName = entry.getKey();</span>
+<span class="fc" id="L40">			int qty = entry.getValue();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">			for (String[] itemLine: itemData) {</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">				if (itemName.equals(itemLine[1])) {</span>
+<span class="nc" id="L43">					total += Float.parseFloat(itemLine[3]) * qty;</span>
+				}
+			}
+			
+<span class="fc" id="L47">		}</span>
+
+<span class="fc" id="L49">		DecimalFormat df = new DecimalFormat(&quot;#.##&quot;);</span>
+//		df.format(total);
+<span class="fc" id="L51">		total = Float.parseFloat(df.format(total));</span>
+
+<span class="fc" id="L53">		BigDecimal convertTotal = round(new BigDecimal(String.valueOf(total)));</span>
+
+<span class="fc" id="L55">		return convertTotal.floatValue();</span>
+//		return total;
+	}
+	
+	public String[][] getChangeData() {
+<span class="fc" id="L60">		return changeData;</span>
+	}
+
+	public void changeToPurchaseState(){
+<span class="fc" id="L64">		vm.setState(prevState);</span>
+<span class="fc" id="L65">	}</span>
+
+	public static BigDecimal round(BigDecimal value) {
+<span class="fc" id="L68">		RoundingMode roundingMode = RoundingMode.UP;</span>
+<span class="fc" id="L69">		BigDecimal increment = new BigDecimal(&quot;0.05&quot;);</span>
+
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">		if (increment.signum() == 0) {</span>
+			// 0 increment does not make much sense, but prevent division by 0
+<span class="nc" id="L73">			return value;</span>
+		} else {
+<span class="fc" id="L75">			BigDecimal divided = value.divide(increment, 0, roundingMode);</span>
+<span class="fc" id="L76">			BigDecimal result = divided.multiply(increment);</span>
+<span class="fc" id="L77">			return result;</span>
+		}
+	}
+	
+	public void finishTransaction(float change) {
+<span class="fc" id="L82">		String user = super.getVm().getUserName();</span>
+<span class="fc" id="L83">		float moneyPaid = calculateTotal();</span>
+		
+		//TODO moneyPaid and change 
+<span class="fc" id="L86">		TransactionModel tm = new TransactionModel(user, moneyPaid, change, &quot;cash&quot;, itemsToPurchase);</span>
+<span class="fc" id="L87">		tm.addSuccessfulTransaction();</span>
+		
+		//TODO update change
+<span class="fc" id="L90">		vm.setState(new DefaultState(vm));</span>
+<span class="fc" id="L91">	}</span>
+
+	public boolean checkTransactionTimeout() {
+<span class="fc" id="L94">		boolean timedout = super.checkTimedOut(timeoutPeriodSeconds);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (timedout) {</span>
+<span class="fc" id="L96">			TransactionModel tm = new TransactionModel(vm.getUserName(), &quot;Timed out&quot;);</span>
+<span class="fc" id="L97">			tm.addFailedTransaction();</span>
+		}
+<span class="fc" id="L99">		return timedout;</span>
+	}
+
+	public void setTimeout(int sec) {
+<span class="fc" id="L103">		this.timeoutPeriodSeconds = sec;</span>
+<span class="fc" id="L104">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

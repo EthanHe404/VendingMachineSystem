@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestockView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">RestockView.java</span></div><h1>RestockView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import vendingMachineSystem.controller.RestockState;
+import vendingMachineSystem.model.DataModel;
+import vendingMachineSystem.model.Product;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class RestockView extends AbstractView{
+    private RestockState state;
+    private Dimension size;
+    private JTextField item;
+    private JTextField code;
+    private JTextField newName;
+    private JTextField newCode;
+    private JTextField newCategory;
+    private JTextField newQuantity;
+    private JTextField newPrice;
+    private boolean itemFound;
+    private int itemIndex;
+    private JScrollPane scrollPane;
+
+<span class="fc" id="L29">    public RestockView(RestockState state){</span>
+<span class="fc" id="L30">        this.state = state;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public void display() {
+<span class="fc" id="L35">        Window window = Window.getInstance();</span>
+
+<span class="fc" id="L37">        Panel p = new Panel();</span>
+<span class="fc" id="L38">        p.setLayout(null);</span>
+<span class="fc" id="L39">        JLabel pageLabel = new JLabel(&quot;Modify/Restock&quot;);</span>
+<span class="fc" id="L40">        size = pageLabel.getPreferredSize();</span>
+<span class="fc" id="L41">        pageLabel.setBounds(170, 30, size.width, size.height);</span>
+<span class="fc" id="L42">        p.add(pageLabel);</span>
+
+        //item table
+<span class="fc" id="L45">        displayProductList(p);</span>
+
+        // cancel
+<span class="fc" id="L48">        JButton cancelButton = new JButton(&quot;Return&quot;);</span>
+<span class="fc" id="L49">        cancelButton.setBounds(550,220,100,40);</span>
+        //cancelButton.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 10));
+<span class="fc" id="L51">        cancelButton.addActionListener(new ActionListener() {</span>
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L54">                RestockView.this.state.changeToLoggedInState();</span>
+<span class="nc" id="L55">            }</span>
+        });
+<span class="fc" id="L57">        p.add(cancelButton);</span>
+
+        //save
+<span class="fc" id="L60">        JButton saveButton = new JButton(&quot;Save&quot;);</span>
+<span class="fc" id="L61">        size = saveButton.getPreferredSize();</span>
+<span class="fc" id="L62">        saveButton.setBounds(550,170, 100, 40);</span>
+
+<span class="fc" id="L64">        saveButton.addActionListener(new ActionListener() {</span>
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L67">                boolean canUpdate = false;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                if (itemFound){</span>
+                    //update item
+<span class="nc" id="L70">                    canUpdate = updateItem();</span>
+
+                }
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                if (canUpdate){</span>
+<span class="nc" id="L74">                    RestockView.this.state.changeToLoggedInState();</span>
+                } else{
+<span class="nc" id="L76">                    new FailRestock();</span>
+                }
+
+<span class="nc" id="L79">            }</span>
+        });
+<span class="fc" id="L81">        p.add(saveButton);</span>
+
+<span class="fc" id="L83">        JLabel itemLabel = new JLabel(&quot;Item name:&quot;);</span>
+<span class="fc" id="L84">        size = itemLabel.getPreferredSize();</span>
+<span class="fc" id="L85">        itemLabel.setBounds(70, 70, size.width, size.height);</span>
+<span class="fc" id="L86">        p.add(itemLabel);</span>
+
+<span class="fc" id="L88">        item = new JTextField(18);</span>
+<span class="fc" id="L89">        item.setBounds(140, 65, 150, 26);</span>
+<span class="fc" id="L90">        p.add(item);</span>
+
+<span class="fc" id="L92">        JButton searchNameButton = new JButton(&quot;Search by name&quot;);</span>
+<span class="fc" id="L93">        size = searchNameButton.getPreferredSize();</span>
+<span class="fc" id="L94">        searchNameButton.setBounds(140 + 150,65, size.width, size.height);</span>
+
+<span class="fc" id="L96">        searchNameButton.addActionListener(new ActionListener() {</span>
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L100">                itemIndex = showProductToModify(p, &quot;name&quot;);</span>
+<span class="nc" id="L101">            }</span>
+
+        });
+<span class="fc" id="L104">        p.add(searchNameButton);</span>
+
+<span class="fc" id="L106">        JLabel codeLabel = new JLabel(&quot;Item code:&quot;);</span>
+<span class="fc" id="L107">        size = codeLabel.getPreferredSize();</span>
+<span class="fc" id="L108">        codeLabel.setBounds(70, 100, size.width, size.height);</span>
+<span class="fc" id="L109">        p.add(codeLabel);</span>
+
+<span class="fc" id="L111">        code = new JTextField(18);</span>
+<span class="fc" id="L112">        code.setBounds(140, 95, 150, 26);</span>
+<span class="fc" id="L113">        p.add(code);</span>
+
+<span class="fc" id="L115">        JButton searchButton = new JButton(&quot;Search by code&quot;);</span>
+<span class="fc" id="L116">        size = searchButton.getPreferredSize();</span>
+<span class="fc" id="L117">        searchButton.setBounds(140 + 150,95, size.width, size.height);</span>
+
+<span class="fc" id="L119">        searchButton.addActionListener(new ActionListener() {</span>
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L123">                itemIndex = showProductToModify(p, &quot;code&quot;);</span>
+<span class="nc" id="L124">            }</span>
+
+        });
+<span class="fc" id="L127">        p.add(searchButton);</span>
+
+<span class="fc" id="L129">        showModifyButton(p);</span>
+
+<span class="fc" id="L131">        window.updateWindow(p);</span>
+<span class="fc" id="L132">    }</span>
+
+    public int showProductToModify(Panel p, String method) {
+<span class="nc" id="L135">        int index = -1;</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (method.equals(&quot;name&quot;)){</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            for (int i = 0; i &lt; state.getItemData().length; i++){</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                if (state.getItemData()[i][1].equals(item.getText())){</span>
+<span class="nc" id="L140">                    index = i;</span>
+                }
+            }
+
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        } else if (method.equals(&quot;code&quot;)) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            for (int i = 0; i &lt; state.getItemData().length; i++){</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                if (state.getItemData()[i][4].equals(code.getText())){</span>
+<span class="nc" id="L147">                    index = i;</span>
+                }
+            }
+        } else{
+            //never reach this line
+<span class="nc" id="L152">            System.out.println(&quot;either search by name or code!\n&quot;);</span>
+        }
+
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (index == -1){</span>
+<span class="nc" id="L156">            System.out.println(&quot;Item not found.\n&quot;);</span>
+<span class="nc" id="L157">            itemFound = false;</span>
+<span class="nc" id="L158">            new FailRestock();</span>
+
+<span class="nc" id="L160">            return index;</span>
+        }
+<span class="nc" id="L162">        itemFound = true;</span>
+
+<span class="nc" id="L164">        String category = state.getItemData()[index][0];</span>
+<span class="nc" id="L165">        String name = state.getItemData()[index][1];</span>
+<span class="nc" id="L166">        String qty = state.getItemData()[index][2];</span>
+<span class="nc" id="L167">        String price = state.getItemData()[index][3];</span>
+<span class="nc" id="L168">        String id = state.getItemData()[index][4];</span>
+
+<span class="nc" id="L170">        String[][] data = {{id, category, name, qty, price}};</span>
+<span class="nc" id="L171">        String[] columns = {&quot;Code&quot;, &quot;Category&quot;, &quot;Name&quot;, &quot;Quantity&quot;, &quot;Price&quot;};</span>
+<span class="nc" id="L172">        JTable productTable = new JTable(data, columns);</span>
+<span class="nc" id="L173">        scrollPane = new JScrollPane(productTable);</span>
+<span class="nc" id="L174">        scrollPane.setBounds(70, 95 + 30, 300, 40);</span>
+<span class="nc" id="L175">        p.add(scrollPane);</span>
+
+<span class="nc" id="L177">        return index;</span>
+    }
+
+    public boolean updateItem(){
+        //check all text field empty or same as old one
+<span class="nc" id="L182">        String name = checkTextField(newName.getText(), state.getItemData()[itemIndex][1]);</span>
+<span class="nc" id="L183">        String id = checkTextField(newCode.getText(), state.getItemData()[itemIndex][4]);</span>
+<span class="nc" id="L184">        String qty = checkTextField(newQuantity.getText(), state.getItemData()[itemIndex][2]);</span>
+<span class="nc" id="L185">        String category = checkTextField(newCategory.getText(), state.getItemData()[itemIndex][0]);</span>
+<span class="nc" id="L186">        String price = checkTextField(newPrice.getText(), state.getItemData()[itemIndex][3]);</span>
+
+        //check if new quantity is greater than 15 max or negative
+        try{
+<span class="nc bnc" id="L190" title="All 4 branches missed.">            if (Integer.parseInt(qty) &gt; 15 || Integer.parseInt(qty) &lt; 0) {</span>
+<span class="nc" id="L191">                System.out.println(&quot;Quantity can NOT be greater than 15.\n&quot;);</span>
+<span class="nc" id="L192">                return false;</span>
+            }
+<span class="nc" id="L194">        } catch (Exception e){</span>
+<span class="nc" id="L195">            System.out.println(&quot;Quantity should be integer.\n&quot;);</span>
+<span class="nc" id="L196">            return false;</span>
+<span class="nc" id="L197">        }</span>
+
+
+        //check new code already exist
+<span class="nc" id="L201">        DataModel dm = new DataModel(false);</span>
+        try{
+<span class="nc" id="L203">            ArrayList&lt;Product&gt; items = (ArrayList&lt;Product&gt;) dm.allProducts();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            for (Product product: items){</span>
+<span class="nc bnc" id="L205" title="All 4 branches missed.">                if (product.getId() == Integer.parseInt(id) &amp;&amp; !id.equals(state.getItemData()[itemIndex][4])){</span>
+<span class="nc" id="L206">                    System.out.println(&quot;Product code already exist.\n&quot;);</span>
+<span class="nc" id="L207">                    return false;</span>
+                }
+<span class="nc" id="L209">            }</span>
+<span class="nc" id="L210">        } catch (Exception e){</span>
+<span class="nc" id="L211">            System.out.println(&quot;ID should be integer.\n&quot;);</span>
+<span class="nc" id="L212">            return false;</span>
+<span class="nc" id="L213">        }</span>
+
+        //check conflicting names
+        try{
+<span class="nc" id="L217">            ArrayList&lt;Product&gt; items = (ArrayList&lt;Product&gt;) dm.allProducts();</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">            for (Product product: items){</span>
+<span class="nc bnc" id="L219" title="All 4 branches missed.">                if (product.getName().equals(name) &amp;&amp; !name.equals(state.getItemData()[itemIndex][1])){</span>
+<span class="nc" id="L220">                    System.out.println(&quot;Product name already exist.\n&quot;);</span>
+<span class="nc" id="L221">                    return false;</span>
+                }
+<span class="nc" id="L223">            }</span>
+<span class="nc" id="L224">        } catch (SQLException e){</span>
+<span class="nc" id="L225">            e.printStackTrace();</span>
+<span class="nc" id="L226">        }</span>
+
+        //check price
+        try{
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            if (Float.parseFloat(price) &lt; 0){</span>
+<span class="nc" id="L231">                System.out.println(&quot;Price can NOT be negative.\n&quot;);</span>
+<span class="nc" id="L232">                return false;</span>
+            }
+<span class="nc" id="L234">        } catch (Exception e){</span>
+<span class="nc" id="L235">            System.out.println(&quot;Price should be float.\n&quot;);</span>
+<span class="nc" id="L236">            return false;</span>
+<span class="nc" id="L237">        }</span>
+
+        //check category
+<span class="nc" id="L240">        String lowCat = category.toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L241" title="All 8 branches missed.">        if (lowCat.equals(&quot;drinks&quot;) || lowCat.equals(&quot;chocolates&quot;) || lowCat.equals(&quot;chips&quot;) || lowCat.equals(&quot;candies&quot;)){</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (lowCat.equals(&quot;drinks&quot;)) category = &quot;Drinks&quot;;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            if (lowCat.equals(&quot;chocolates&quot;)) category = &quot;Chocolates&quot;;</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            if (lowCat.equals(&quot;chips&quot;)) category = &quot;Chips&quot;;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (lowCat.equals(&quot;candies&quot;)) category = &quot;Candies&quot;;</span>
+        } else{
+<span class="nc" id="L247">            System.out.println(&quot;Please enter category among Drinks, Chocolates, Chips and Candies.\n&quot;);</span>
+<span class="nc" id="L248">            return false;</span>
+        }
+
+
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (id.equals(state.getItemData()[itemIndex][4])){</span>
+            //item code is not changing so update item by id
+<span class="nc" id="L254">            RestockView.this.state.updateItemByID(id, name, category, price, qty);</span>
+        } else{
+            //the situation where seller wants to change all item info including id/code
+
+            //update all info except code with original id
+<span class="nc" id="L259">            RestockView.this.state.updateItemByID(state.getItemData()[itemIndex][4], name, category, price, qty);</span>
+            //after updating all other info, update the id by searching through new name
+<span class="nc" id="L261">            RestockView.this.state.updateItemID(name, id);</span>
+        }
+<span class="nc" id="L263">        return true;</span>
+
+    }
+
+    /** return the original string if input is same as original string
+    return the original string if input is empty
+    return input only when input is different from original **/
+    public String checkTextField(String input, String original){
+        //seller didn't enter new input
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (input.equals(&quot;&quot;)) return original;</span>
+
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (input.equals(original)){</span>
+<span class="nc" id="L275">            return original;</span>
+        } else {
+<span class="nc" id="L277">            return input;</span>
+        }
+
+    }
+
+    public void showModifyButton(Panel p) {
+<span class="fc" id="L283">        JLabel newNameLabel = new JLabel(&quot;New name:&quot;);</span>
+<span class="fc" id="L284">        size = newNameLabel.getPreferredSize();</span>
+<span class="fc" id="L285">        newNameLabel.setBounds(70, 100 + 40 + 30, size.width, size.height);</span>
+<span class="fc" id="L286">        p.add(newNameLabel);</span>
+<span class="fc" id="L287">        newName = new JTextField(18);</span>
+<span class="fc" id="L288">        newName.setBounds(140, 165, 150, 26);</span>
+<span class="fc" id="L289">        p.add(newName);</span>
+
+<span class="fc" id="L291">        JLabel newCodeLabel = new JLabel(&quot;New code:&quot;);</span>
+<span class="fc" id="L292">        size = newCodeLabel.getPreferredSize();</span>
+<span class="fc" id="L293">        newCodeLabel.setBounds(70, 200, size.width, size.height);</span>
+<span class="fc" id="L294">        p.add(newCodeLabel);</span>
+<span class="fc" id="L295">        newCode = new JTextField(18);</span>
+<span class="fc" id="L296">        newCode.setBounds(140, 200-5, 150, 26);</span>
+<span class="fc" id="L297">        p.add(newCode);</span>
+
+<span class="fc" id="L299">        JLabel newCatLabel = new JLabel(&quot;New Category:&quot;);</span>
+<span class="fc" id="L300">        size = newCatLabel.getPreferredSize();</span>
+<span class="fc" id="L301">        newCatLabel.setBounds(300, 200, size.width, size.height);</span>
+<span class="fc" id="L302">        p.add(newCatLabel);</span>
+<span class="fc" id="L303">        newCategory = new JTextField(18);</span>
+<span class="fc" id="L304">        newCategory.setBounds(390, 200-5, 150, 26);</span>
+<span class="fc" id="L305">        p.add(newCategory);</span>
+
+<span class="fc" id="L307">        JLabel newQuaLabel = new JLabel(&quot;New Quantity:&quot;);</span>
+<span class="fc" id="L308">        size = newQuaLabel.getPreferredSize();</span>
+<span class="fc" id="L309">        newQuaLabel.setBounds(300, 170, size.width, size.height);</span>
+<span class="fc" id="L310">        p.add(newQuaLabel);</span>
+<span class="fc" id="L311">        newQuantity = new JTextField(18);</span>
+<span class="fc" id="L312">        newQuantity.setBounds(390, 170-5, 150, 26);</span>
+<span class="fc" id="L313">        p.add(newQuantity);</span>
+
+<span class="fc" id="L315">        JLabel newPriLabel = new JLabel(&quot;New Price:&quot;);</span>
+<span class="fc" id="L316">        size = newPriLabel.getPreferredSize();</span>
+<span class="fc" id="L317">        newPriLabel.setBounds(70, 230, size.width, size.height);</span>
+<span class="fc" id="L318">        p.add(newPriLabel);</span>
+<span class="fc" id="L319">        newPrice = new JTextField(18);</span>
+<span class="fc" id="L320">        newPrice.setBounds(140, 230-5, 150, 26);</span>
+<span class="fc" id="L321">        p.add(newPrice);</span>
+<span class="fc" id="L322">    }</span>
+
+    public void displayProductList(Panel p){
+<span class="fc" id="L325">        String[][] data = state.getItemNameList();</span>
+<span class="fc" id="L326">        String[] columns ={&quot;Name&quot;, &quot;Code&quot;};</span>
+
+<span class="fc" id="L328">        JTable productTable = new JTable(data, columns);</span>
+<span class="fc" id="L329">        JScrollPane scrollPane = new JScrollPane(productTable);</span>
+<span class="fc" id="L330">        scrollPane.setBounds(450, 30, 200, 100);</span>
+<span class="fc" id="L331">        p.add(scrollPane);</span>
+<span class="fc" id="L332">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

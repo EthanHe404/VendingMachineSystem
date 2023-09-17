@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportsState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.controller</a> &gt; <span class="el_source">ReportsState.java</span></div><h1>ReportsState.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.controller;
+
+
+import vendingMachineSystem.VendingMachine;
+import vendingMachineSystem.view.LoggedInView;
+import vendingMachineSystem.view.ReportsView;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
+public class ReportsState extends VendingMachineState {
+
+        private String role;
+
+<span class="fc" id="L19">        public String getRole(){return role;}</span>
+        public ReportsState(VendingMachine vm, String role){
+<span class="fc" id="L21">            super(vm);</span>
+<span class="fc" id="L22">            this.role = role;</span>
+<span class="fc" id="L23">        }</span>
+
+    @Override
+    public void run(){
+<span class="fc" id="L27">        ReportsView view = new ReportsView(this);</span>
+<span class="fc" id="L28">        view.display();</span>
+<span class="fc" id="L29">    }</span>
+
+    void output_csv(String filename, String plaintext){
+<span class="fc" id="L32">        File file = new File(filename);</span>
+        try
+        {
+<span class="fc" id="L35">            file.createNewFile();</span>
+<span class="fc" id="L36">            BufferedWriter file_w = new BufferedWriter(new FileWriter(filename, true));</span>
+<span class="fc" id="L37">            file_w.append(plaintext);</span>
+<span class="fc" id="L38">            file_w.close();</span>
+        }
+<span class="nc" id="L40">        catch (IOException e)</span>
+        {
+<span class="nc" id="L42">            e.printStackTrace();</span>
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">    }</span>
+
+    public void clickedCancel(){
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">            if (super.checkTimedOut()){vm.setState(new DefaultState(vm));}</span>
+            else{
+<span class="fc" id="L49">                vm.setState(new LoggedInState(vm, role));</span>
+            }
+<span class="fc" id="L51">    }</span>
+
+
+    String getOutString(String[][] data, String outString){
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (data == null) return outString;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for ( int i =0; i &lt; data.length; i++){</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            for ( int j = 0; j &lt; data[i].length; j++){</span>
+<span class="fc" id="L58">                outString = outString + data[i][j];</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">                if ( j == data[i].length-1 ){ // last</span>
+<span class="fc" id="L60">                    outString = outString + &quot;\n&quot;;</span>
+                } else{
+<span class="fc" id="L62">                    outString = outString + &quot;,&quot;;</span>
+                }
+            }
+
+        }
+<span class="fc" id="L67">        return outString;</span>
+    }
+    String getFileName( boolean is_csv, String repType ){
+<span class="fc" id="L70">        Timestamp timestamp = new Timestamp(System.currentTimeMillis());</span>
+<span class="fc" id="L71">        String filename = new SimpleDateFormat(&quot;yyyyMMdd HH:mm:ss.S&quot;).format(timestamp) + &quot;_&quot; + repType;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (is_csv){</span>
+<span class="fc" id="L73">            filename = filename +&quot;.csv&quot;;</span>
+        } else {
+<span class="fc" id="L75">            filename = filename + &quot;.txt&quot;;</span>
+        }
+<span class="fc" id="L77">        return filename;</span>
+    }
+
+    public void failedReport( boolean is_csv ){
+<span class="fc" id="L81">        String outString = &quot;timestamp,user,reason\n&quot;;</span>
+<span class="fc" id="L82">        String[][] failedData = super.getFailedData();</span>
+<span class="fc" id="L83">        outString = getOutString( failedData, outString );</span>
+<span class="fc" id="L84">        String filename = getFileName( is_csv, &quot;failed_transactions&quot;);</span>
+<span class="fc" id="L85">        output_csv(filename, outString);</span>
+<span class="fc" id="L86">    }</span>
+
+    public void changeReport(boolean is_csv) {
+<span class="fc" id="L89">        String outString = &quot;name,value,quantity\n&quot;;</span>
+<span class="fc" id="L90">        String[][] cashData = super.getCashData();</span>
+<span class="fc" id="L91">        outString = getOutString( cashData, outString );</span>
+<span class="fc" id="L92">        String filename = getFileName( is_csv, &quot;change&quot;);</span>
+<span class="fc" id="L93">        output_csv(filename, outString);</span>
+<span class="fc" id="L94">    }</span>
+
+    public void summaryReport(boolean is_csv) {
+<span class="fc" id="L97">        String outString = &quot;when,item,paid,change,method\n&quot;;</span>
+<span class="fc" id="L98">        String[][] summData = super.getSummData();</span>
+<span class="fc" id="L99">        outString = getOutString( summData, outString );</span>
+<span class="fc" id="L100">        String filename = getFileName( is_csv, &quot;transaction_summary&quot;);</span>
+<span class="fc" id="L101">        output_csv(filename, outString);</span>
+<span class="fc" id="L102">    }</span>
+
+    public void IsummaryReport(boolean is_csv) {
+<span class="fc" id="L105">        String outString = &quot;code,name,quantity\n&quot;;</span>
+<span class="fc" id="L106">        String[][] IsummData = super.getISummData();</span>
+<span class="fc" id="L107">        outString = getOutString( IsummData, outString );</span>
+<span class="fc" id="L108">        String filename = getFileName( is_csv, &quot;item_summary&quot;);</span>
+<span class="fc" id="L109">        output_csv(filename, outString);</span>
+<span class="fc" id="L110">    }</span>
+
+    public void detailsReport(boolean is_csv) {
+<span class="fc" id="L113">        String outString = &quot;category,name,quantity,price,id\n&quot;;</span>
+<span class="fc" id="L114">        String[][] cashData = super.getItemData(true);</span>
+<span class="fc" id="L115">        outString = getOutString( cashData, outString );</span>
+<span class="fc" id="L116">        String filename = getFileName( is_csv, &quot;itemDetails&quot;);</span>
+<span class="fc" id="L117">        output_csv(filename, outString);</span>
+<span class="fc" id="L118">    }</span>
+
+    public void userReport(boolean is_csv) {
+<span class="fc" id="L121">        String outString = &quot;username,role\n&quot;;</span>
+<span class="fc" id="L122">        String[][] userData = super.getUserReport();</span>
+<span class="fc" id="L123">        outString = getOutString( userData, outString );</span>
+<span class="fc" id="L124">        String filename = getFileName( is_csv, &quot;users&quot;);</span>
+<span class="fc" id="L125">        output_csv(filename, outString);</span>
+<span class="fc" id="L126">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

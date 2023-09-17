@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.LoggedInStateTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:04" hostname="ethanAir.modem" time="0.332">
+  <properties/>
+  <testcase name="clickCancel()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.022"/>
+  <testcase name="clickChange()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.035"/>
+  <testcase name="clickMod()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.082"/>
+  <testcase name="clickUsr()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.087"/>
+  <testcase name="clickReports()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.079"/>
+  <testcase name="clickPurchase()" classname="vendingMachineSystem.controller.LoggedInStateTest" time="0.017"/>
+  <system-out><![CDATA[Clicked Update Change
+Clicked Modify/Restock
+Clicked Manage Users
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

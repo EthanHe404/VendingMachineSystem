@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.LoginStateTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:01" hostname="ethanAir.modem" time="1.247">
+  <properties/>
+  <testcase name="No Timeout" classname="vendingMachineSystem.controller.LoginStateTest" time="0.796"/>
+  <testcase name="Change To Registration Page" classname="vendingMachineSystem.controller.LoginStateTest" time="0.126"/>
+  <testcase name="Timeout" classname="vendingMachineSystem.controller.LoginStateTest" time="0.152"/>
+  <testcase name="Get Password" classname="vendingMachineSystem.controller.LoginStateTest" time="0.043"/>
+  <testcase name="Change To Logged In Page" classname="vendingMachineSystem.controller.LoginStateTest" time="0.071"/>
+  <testcase name="Get User Type" classname="vendingMachineSystem.controller.LoginStateTest" time="0.045"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

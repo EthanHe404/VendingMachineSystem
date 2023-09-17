@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.ReportGetterTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:12" hostname="ethanAir.modem" time="0.112">
+  <properties/>
+  <testcase name="detailRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.012"/>
+  <testcase name="ISummRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.017"/>
+  <testcase name="failRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.046"/>
+  <testcase name="usrRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.008"/>
+  <testcase name="summaryRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.012"/>
+  <testcase name="changeRep()" classname="vendingMachineSystem.controller.ReportGetterTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

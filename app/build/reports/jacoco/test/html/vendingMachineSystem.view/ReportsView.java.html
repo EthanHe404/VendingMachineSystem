@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportsView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">ReportsView.java</span></div><h1>ReportsView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import vendingMachineSystem.controller.LoggedInState;
+import vendingMachineSystem.controller.ReportsState;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ReportsView extends AbstractView{
+
+    ReportsState state;
+    String label_string;
+
+<span class="fc" id="L16">    public ReportsView(ReportsState state) {</span>
+<span class="fc" id="L17">        this.state = state;</span>
+<span class="fc" id="L18">        label_string = state.getRole() + &quot; Reports&quot;;</span>
+<span class="fc" id="L19">    }</span>
+
+    @Override
+    public void display() {
+<span class="fc" id="L23">        Window window = Window.getInstance();</span>
+
+<span class="fc" id="L25">        int report_stagger = 80;</span>
+        Dimension reportDim;
+<span class="fc" id="L27">        int buttonWidth = 100;</span>
+
+<span class="fc" id="L29">        Panel p = new Panel();</span>
+<span class="fc" id="L30">        p.setLayout(null);</span>
+
+        // label
+<span class="fc" id="L33">        JLabel label = new JLabel(label_string);</span>
+<span class="fc" id="L34">        Dimension size = label.getPreferredSize();</span>
+<span class="fc" id="L35">        label.setBounds(170,30,size.width,size.height);</span>
+<span class="fc" id="L36">        p.add(label);</span>
+
+        // report buttons
+
+        // change, transaction summary
+<span class="pc bpc" id="L41" title="3 of 4 branches missed.">        if (state.getRole().equals(&quot;OWNER&quot;) || state.getRole().equals(&quot;CASHIER&quot;)) {</span>
+<span class="fc" id="L42">            JButton reportButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L43">            reportButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L46">                    ReportsView.this.state.changeReport(true);</span>
+<span class="nc" id="L47">                    new ReportDownloaded();</span>
+<span class="nc" id="L48">                }</span>
+            });
+<span class="fc" id="L50">            JLabel reportLabel = new JLabel(&quot;Change&quot;); // label</span>
+<span class="fc" id="L51">            reportDim = reportLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L52">            JButton reportButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L53">            reportButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L56">                    ReportsView.this.state.changeReport(false);</span>
+<span class="nc" id="L57">                    new ReportDownloaded();</span>
+<span class="nc" id="L58">                }</span>
+            });
+
+<span class="fc" id="L61">            reportLabel.setBounds(80, report_stagger, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L62">            reportButtonCSV.setBounds(reportDim.width + 110, report_stagger, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L63">            reportButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L64">            p.add(reportLabel);</span>
+<span class="fc" id="L65">            p.add(reportButtonCSV);</span>
+<span class="fc" id="L66">            p.add(reportButtonTXT);</span>
+<span class="fc" id="L67">            report_stagger += reportDim.height;</span>
+
+            // summary
+<span class="fc" id="L70">            JButton summaryButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L71">            summaryButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L74">                    ReportsView.this.state.summaryReport(true);</span>
+<span class="nc" id="L75">                    new ReportDownloaded();</span>
+<span class="nc" id="L76">                }</span>
+            });
+<span class="fc" id="L78">            JLabel summaryLabel = new JLabel(&quot;Transaction summary&quot;); // label</span>
+<span class="fc" id="L79">            reportDim = summaryLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L80">            JButton summaryButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L81">            summaryButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L84">                    ReportsView.this.state.summaryReport(false);</span>
+<span class="nc" id="L85">                    new ReportDownloaded();</span>
+<span class="nc" id="L86">                }</span>
+            });
+
+<span class="fc" id="L89">            summaryLabel.setBounds(80, report_stagger + 10, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L90">            summaryButtonCSV.setBounds(reportDim.width + 110, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L91">            summaryButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L92">            p.add(summaryLabel);</span>
+<span class="fc" id="L93">            p.add(summaryButtonCSV);</span>
+<span class="fc" id="L94">            p.add(summaryButtonTXT);</span>
+<span class="fc" id="L95">            report_stagger += reportDim.height;</span>
+        }
+
+        // item details, item summary
+<span class="pc bpc" id="L99" title="3 of 4 branches missed.">        if ( state.getRole().equals(&quot;OWNER&quot;) || state.getRole().equals(&quot;SELLER&quot;)){</span>
+
+            //details
+<span class="fc" id="L102">            JButton detailsButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L103">            detailsButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L106">                    ReportsView.this.state.detailsReport(true);</span>
+<span class="nc" id="L107">                    new ReportDownloaded();</span>
+<span class="nc" id="L108">                }</span>
+            });
+<span class="fc" id="L110">            JLabel detailsLabel = new JLabel(&quot;Item Details&quot;); // label</span>
+<span class="fc" id="L111">            reportDim = detailsLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L112">            JButton detailsButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L113">            detailsButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L116">                    ReportsView.this.state.detailsReport(false);</span>
+<span class="nc" id="L117">                    new ReportDownloaded();</span>
+<span class="nc" id="L118">                }</span>
+            });
+
+<span class="fc" id="L121">            detailsLabel.setBounds(80, report_stagger + 10, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L122">            detailsButtonCSV.setBounds(reportDim.width + 110, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L123">            detailsButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L124">            p.add(detailsLabel);</span>
+<span class="fc" id="L125">            p.add(detailsButtonCSV);</span>
+<span class="fc" id="L126">            p.add(detailsButtonTXT);</span>
+<span class="fc" id="L127">            report_stagger += reportDim.height;</span>
+
+            // Item summary
+<span class="fc" id="L130">            JButton IsummaryButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L131">            IsummaryButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L134">                    ReportsView.this.state.IsummaryReport(true);</span>
+<span class="nc" id="L135">                    new ReportDownloaded();</span>
+<span class="nc" id="L136">                }</span>
+            });
+<span class="fc" id="L138">            JLabel IsummaryLabel = new JLabel(&quot;Item summary&quot;); // label</span>
+<span class="fc" id="L139">            reportDim = IsummaryLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L140">            JButton IsummaryButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L141">            IsummaryButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L144">                    ReportsView.this.state.IsummaryReport(false);</span>
+<span class="nc" id="L145">                    new ReportDownloaded();</span>
+<span class="nc" id="L146">                }</span>
+            });
+
+<span class="fc" id="L149">            IsummaryLabel.setBounds(80, report_stagger + 10, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L150">            IsummaryButtonCSV.setBounds(reportDim.width + 110, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L151">            IsummaryButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger + 10, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L152">            p.add(IsummaryLabel);</span>
+<span class="fc" id="L153">            p.add(IsummaryButtonCSV);</span>
+<span class="fc" id="L154">            p.add(IsummaryButtonTXT);</span>
+<span class="fc" id="L155">            report_stagger += reportDim.height;</span>
+        }
+        // users, failed transactions
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        if ( state.getRole().equals(&quot;OWNER&quot;)){</span>
+
+            //users
+<span class="fc" id="L161">            JButton usersButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L162">            usersButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L165">                    ReportsView.this.state.userReport(true);</span>
+<span class="nc" id="L166">                    new ReportDownloaded();</span>
+<span class="nc" id="L167">                }</span>
+            });
+<span class="fc" id="L169">            JLabel usersLabel = new JLabel(&quot;Users&quot;); // label</span>
+<span class="fc" id="L170">            reportDim = usersLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L171">            JButton usersButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L172">            usersButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L175">                    ReportsView.this.state.userReport(false);</span>
+<span class="nc" id="L176">                    new ReportDownloaded();</span>
+<span class="nc" id="L177">                }</span>
+
+            });
+
+<span class="fc" id="L181">            usersLabel.setBounds(80, report_stagger+20, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L182">            usersButtonCSV.setBounds(reportDim.width + 110, report_stagger +20, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L183">            usersButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger+20, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L184">            p.add(usersLabel);</span>
+<span class="fc" id="L185">            p.add(usersButtonCSV);</span>
+<span class="fc" id="L186">            p.add(usersButtonTXT);</span>
+<span class="fc" id="L187">            report_stagger += reportDim.height;</span>
+
+            // failed
+<span class="fc" id="L190">            JButton failedButtonCSV = new JButton(&quot;csv&quot;); // button</span>
+<span class="fc" id="L191">            failedButtonCSV.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L194">                    ReportsView.this.state.failedReport(true);</span>
+<span class="nc" id="L195">                    new ReportDownloaded();</span>
+<span class="nc" id="L196">                }</span>
+            });
+<span class="fc" id="L198">            JLabel failedLabel = new JLabel(&quot;Failed Transactions&quot;); // label</span>
+<span class="fc" id="L199">            reportDim = failedLabel.getPreferredSize(); // txt</span>
+<span class="fc" id="L200">            JButton failedButtonTXT = new JButton(&quot;text&quot;);</span>
+<span class="fc" id="L201">            failedButtonTXT.addActionListener(new ActionListener() {</span>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L204">                    ReportsView.this.state.failedReport(false);</span>
+<span class="nc" id="L205">                    new ReportDownloaded();</span>
+<span class="nc" id="L206">                }</span>
+
+            });
+
+<span class="fc" id="L210">            failedLabel.setBounds(80, report_stagger+20, reportDim.width, reportDim.height);</span>
+<span class="fc" id="L211">            failedButtonCSV.setBounds(reportDim.width + 110, report_stagger +20, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L212">            failedButtonTXT.setBounds(reportDim.width + 120 + buttonWidth, report_stagger+20, buttonWidth, reportDim.height);</span>
+<span class="fc" id="L213">            p.add(failedLabel);</span>
+<span class="fc" id="L214">            p.add(failedButtonCSV);</span>
+<span class="fc" id="L215">            p.add(failedButtonTXT);</span>
+<span class="fc" id="L216">            report_stagger += reportDim.height;</span>
+        }
+
+        // cancel
+<span class="fc" id="L220">        JButton cancelButton = new JButton(&quot;Return&quot;);</span>
+<span class="fc" id="L221">        cancelButton.addActionListener(new ActionListener() {</span>
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L224">                ReportsView.this.state.clickedCancel();</span>
+<span class="nc" id="L225">            }</span>
+        });
+<span class="fc" id="L227">        cancelButton.setBounds(550,220,100,40);</span>
+        //cancelButton.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 10));
+<span class="fc" id="L229">        p.add(cancelButton);</span>
+
+        // finish
+<span class="fc" id="L232">        window.updateWindow(p);</span>
+<span class="fc" id="L233">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

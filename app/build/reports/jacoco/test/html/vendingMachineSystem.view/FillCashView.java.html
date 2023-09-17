@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FillCashView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.view</a> &gt; <span class="el_source">FillCashView.java</span></div><h1>FillCashView.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.view;
+
+import vendingMachineSystem.controller.FillCashState;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class FillCashView extends AbstractView{
+    private FillCashState state;
+    private Dimension size;
+    private JTextField cash;
+    private JTextField newQty;
+<span class="fc" id="L15">    private boolean cashFound = false;</span>
+
+<span class="fc" id="L17">    public FillCashView(FillCashState state){</span>
+<span class="fc" id="L18">        this.state = state;</span>
+<span class="fc" id="L19">    }</span>
+
+    @Override
+    public void display() {
+<span class="fc" id="L23">        Window window = Window.getInstance();</span>
+
+<span class="fc" id="L25">        Panel p = new Panel();</span>
+<span class="fc" id="L26">        p.setLayout(null);</span>
+<span class="fc" id="L27">        JLabel pageLabel = new JLabel(&quot;Cash Re-Fill&quot;);</span>
+<span class="fc" id="L28">        size = pageLabel.getPreferredSize();</span>
+<span class="fc" id="L29">        pageLabel.setBounds(170, 30, size.width, size.height);</span>
+<span class="fc" id="L30">        p.add(pageLabel);</span>
+
+        //cash table
+<span class="fc" id="L33">        String[][] data = state.getCashData(false);</span>
+<span class="fc" id="L34">        String[] columns ={&quot;Name&quot;, &quot;Quantity&quot;};</span>
+
+<span class="fc" id="L36">        JTable productTable = new JTable(data, columns);</span>
+<span class="fc" id="L37">        JScrollPane scrollPane = new JScrollPane(productTable);</span>
+<span class="fc" id="L38">        scrollPane.setBounds(350, 10, 250, 150);</span>
+<span class="fc" id="L39">        p.add(scrollPane);</span>
+
+
+
+        // cancel
+<span class="fc" id="L44">        JButton cancelButton = new JButton(&quot;Return&quot;);</span>
+<span class="fc" id="L45">        cancelButton.setBounds(550,220,100,40);</span>
+        //cancelButton.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 10));
+<span class="fc" id="L47">        cancelButton.addActionListener(new ActionListener() {</span>
+            @Override
+            public void actionPerformed(ActionEvent e) {
+<span class="nc" id="L50">                FillCashView.this.state.changeToLoggedInState();</span>
+<span class="nc" id="L51">            }</span>
+        });
+<span class="fc" id="L53">        p.add(cancelButton);</span>
+
+<span class="fc" id="L55">        JLabel noteLabel = new JLabel(&quot;Cash ($ or c)&quot;);</span>
+<span class="fc" id="L56">        size = noteLabel.getPreferredSize();</span>
+<span class="fc" id="L57">        noteLabel.setBounds(70, 70, size.width, size.height);</span>
+<span class="fc" id="L58">        p.add(noteLabel);</span>
+
+<span class="fc" id="L60">        cash = new JTextField(18);</span>
+<span class="fc" id="L61">        cash.setBounds(70 + size.width, 65, 97, 26);</span>
+<span class="fc" id="L62">        p.add(cash);</span>
+
+<span class="fc" id="L64">        JLabel found = new JLabel();</span>
+<span class="fc" id="L65">        found.setBounds(70, 100, 200, 20);</span>
+<span class="fc" id="L66">        p.add(found);</span>
+
+        //search button
+<span class="fc" id="L69">        JButton searchButton = new JButton(&quot;Select&quot;);</span>
+<span class="fc" id="L70">        size = searchButton.getPreferredSize();</span>
+<span class="fc" id="L71">        searchButton.setBounds(250,65, size.width, size.height);</span>
+
+<span class="fc" id="L73">        searchButton.addActionListener(new ActionListener() {</span>
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+//                System.out.println(cash.getText());
+<span class="nc" id="L78">                cashFound = false;</span>
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                for (int i = 0; i &lt; state.getCashData().length; i++){</span>
+
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                    if (state.getCashData()[i][0].equals(cash.getText())){</span>
+
+<span class="nc" id="L84">                        found.setText(&quot;Cash Found.&quot;);</span>
+
+<span class="nc" id="L86">                        cashFound = true;</span>
+                    }
+                }
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                if (!cashFound) {</span>
+<span class="nc" id="L91">                    found.setText(&quot;Cash Not Found.&quot;);</span>
+                }
+
+<span class="nc" id="L94">            }</span>
+
+        });
+<span class="fc" id="L97">        p.add(searchButton);</span>
+
+<span class="fc" id="L99">        JLabel msg = new JLabel();</span>
+<span class="fc" id="L100">        msg.setBounds(70, 100 + 60, 300,20);</span>
+<span class="fc" id="L101">        p.add(msg);</span>
+
+        //new quantity
+<span class="fc" id="L104">        JLabel qtyLabel = new JLabel(&quot;New Quantity&quot;);</span>
+<span class="fc" id="L105">        size = qtyLabel.getPreferredSize();</span>
+<span class="fc" id="L106">        qtyLabel.setBounds(70, 100 + 40, size.width, size.height);</span>
+<span class="fc" id="L107">        p.add(qtyLabel);</span>
+
+<span class="fc" id="L109">        newQty = new JTextField(18);</span>
+<span class="fc" id="L110">        newQty.setBounds(70 + size.width, 140-5, 100, 26);</span>
+<span class="fc" id="L111">        p.add(newQty);</span>
+
+        //save
+<span class="fc" id="L114">        JButton saveButton = new JButton(&quot;Save&quot;);</span>
+<span class="fc" id="L115">        size = saveButton.getPreferredSize();</span>
+<span class="fc" id="L116">        saveButton.setBounds(250 ,140-5, size.width, size.height);</span>
+<span class="fc" id="L117">        saveButton.addActionListener(new ActionListener() {</span>
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //no changes if no cash selected or qty entered
+<span class="nc bnc" id="L121" title="All 4 branches missed.">                if (cash.getText().equals(&quot;&quot;) || newQty.getText().equals(&quot;&quot;)){</span>
+<span class="nc" id="L122">                    new FailCashRefill();</span>
+<span class="nc" id="L123">                    return;</span>
+                }
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (!cashFound) {</span>
+<span class="nc" id="L126">                    new FailCashRefill();</span>
+<span class="nc" id="L127">                    msg.setText(&quot;Not selecting valid cash, unable to save&quot;);</span>
+<span class="nc" id="L128">                    return;</span>
+                }
+                try{
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                    if (Integer.parseInt(newQty.getText()) &lt; 0){</span>
+<span class="nc" id="L132">                        msg.setText(&quot;Negative amount, unable to save&quot;);</span>
+<span class="nc" id="L133">                        new FailCashRefill();</span>
+<span class="nc" id="L134">                        return;</span>
+                    }
+<span class="nc" id="L136">                } catch (Exception ex){</span>
+<span class="nc" id="L137">                    msg.setText(&quot;Quantity should be integer.&quot;);</span>
+<span class="nc" id="L138">                    return;</span>
+<span class="nc" id="L139">                }</span>
+
+                //modify database
+<span class="nc" id="L142">                state.updateCash(cash.getText(), newQty.getText());</span>
+<span class="nc" id="L143">                FillCashView.this.state.changeToLoggedInState();</span>
+<span class="nc" id="L144">            }</span>
+        });
+<span class="fc" id="L146">        p.add(saveButton);</span>
+
+
+
+<span class="fc" id="L150">        window.updateWindow(p);</span>
+<span class="fc" id="L151">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

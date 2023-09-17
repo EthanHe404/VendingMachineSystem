@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.VendingMachineStateTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:04" hostname="ethanAir.modem" time="6.233">
+  <properties/>
+  <testcase name="Transaction Timeout" classname="vendingMachineSystem.controller.VendingMachineStateTest" time="5.088"/>
+  <testcase name="Cancelling a transaction" classname="vendingMachineSystem.controller.VendingMachineStateTest" time="0.079"/>
+  <testcase name="Transaction not timed out" classname="vendingMachineSystem.controller.VendingMachineStateTest" time="1.058"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

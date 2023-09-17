@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestockState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">vendingMachineSystem.controller</a> &gt; <span class="el_source">RestockState.java</span></div><h1>RestockState.java</h1><pre class="source lang-java linenums">package vendingMachineSystem.controller;
+
+import vendingMachineSystem.VendingMachine;
+import vendingMachineSystem.model.DataModel;
+import vendingMachineSystem.model.Product;
+import vendingMachineSystem.view.RestockView;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class RestockState extends VendingMachineState{
+    private String role;
+
+    public RestockState(VendingMachine vm, String role) {
+<span class="fc" id="L15">        super(vm);</span>
+<span class="fc" id="L16">        this.role = role;</span>
+<span class="fc" id="L17">    }</span>
+
+    @Override
+    public void run() {
+<span class="fc" id="L21">        RestockView view = new RestockView(this);</span>
+<span class="fc" id="L22">        view.display();</span>
+<span class="fc" id="L23">    }</span>
+
+    public void changeToLoggedInState(){
+<span class="fc" id="L26">        vm.setState(new LoggedInState(vm, this.role));</span>
+<span class="fc" id="L27">    }</span>
+
+    public void updateItemByID(String id, String name, String category, String price, String qty){
+<span class="fc" id="L30">        DataModel dm = new DataModel(false);</span>
+        try{
+<span class="fc" id="L32">            dm.updateItemByID(id, name, category, price, qty);</span>
+<span class="nc" id="L33">        } catch (SQLException e){</span>
+<span class="nc" id="L34">            throw new RuntimeException(e);</span>
+<span class="fc" id="L35">        }</span>
+
+<span class="fc" id="L37">    }</span>
+
+    public void updateItemID( String name, String id){
+<span class="fc" id="L40">        DataModel dm = new DataModel(false);</span>
+        try{
+<span class="fc" id="L42">            dm.updateItemID(name,id);</span>
+<span class="nc" id="L43">        } catch (SQLException e){</span>
+<span class="nc" id="L44">            throw new RuntimeException(e);</span>
+<span class="fc" id="L45">        }</span>
+
+<span class="fc" id="L47">    }</span>
+
+    public String[][] getItemNameList(){
+        // get products
+<span class="fc" id="L51">        DataModel dm = new DataModel(false);</span>
+        List&lt;Product&gt; ls;
+        try {
+<span class="fc" id="L54">            ls = dm.allProducts();</span>
+<span class="nc" id="L55">        } catch (SQLException e) {</span>
+<span class="nc" id="L56">            throw new RuntimeException(e);</span>
+<span class="fc" id="L57">        }</span>
+
+        // now get 2d list of items needed
+        // category, item, quantity, price
+<span class="fc" id="L61">        String[][] ret = new String[ls.size()][2];</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for ( int prod_n = 0; prod_n &lt; ls.size(); prod_n++ ){</span>
+<span class="fc" id="L63">            ret[prod_n][0] = ls.get(prod_n).getName();</span>
+<span class="fc" id="L64">            ret[prod_n][1] = Integer.toString(ls.get(prod_n).getId());</span>
+        }
+
+<span class="fc" id="L67">        return ret;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

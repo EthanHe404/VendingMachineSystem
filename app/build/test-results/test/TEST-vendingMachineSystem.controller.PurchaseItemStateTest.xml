@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="vendingMachineSystem.controller.PurchaseItemStateTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-11-13T23:06:11" hostname="ethanAir.modem" time="0.585">
+  <properties/>
+  <testcase name="No Timeout" classname="vendingMachineSystem.controller.PurchaseItemStateTest" time="0.066"/>
+  <testcase name="Timeout" classname="vendingMachineSystem.controller.PurchaseItemStateTest" time="0.063"/>
+  <testcase name="Cancel Transaction" classname="vendingMachineSystem.controller.PurchaseItemStateTest" time="0.027"/>
+  <testcase name="Change To Card Payment Page" classname="vendingMachineSystem.controller.PurchaseItemStateTest" time="0.324"/>
+  <testcase name="Change To Cash Payment Page" classname="vendingMachineSystem.controller.PurchaseItemStateTest" time="0.088"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
